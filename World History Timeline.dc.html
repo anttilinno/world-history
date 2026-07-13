@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World History Timeline — Eras × Continents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --paper: #efece1;
+  --card: #faf8f2;
+  --ink: #2c2924;
+  --ink-2: #5c574d;
+  --muted: #8a8377;
+  --line: #d9d4c6;
+  --zebra: #e8e4d7;
+  --ring: rgba(44,41,36,0.12);
+  /* Vivid (default) */
+  --africa: #2a78d6;
+  --europe: #1baf7a;
+  --asia: #d99400;
+  --namerica: #e34948;
+  --samerica: #7a5cc8;
+  --oceania: #12988a;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+:root[data-palette="classic"] {
+  --africa: #4a6fa5;
+  --europe: #5a7d55;
+  --asia: #b0823f;
+  --namerica: #a8534b;
+  --samerica: #6a5a8a;
+  --oceania: #45857b;
+}
+:root[data-palette="muted"] {
+  --africa: #7d8ba0;
+  --europe: #859079;
+  --asia: #ad9d72;
+  --namerica: #a8837e;
+  --samerica: #897f9a;
+  --oceania: #7c968f;
+}
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 28px clamp(14px, 3vw, 40px) 96px;
+}
+header.masthead { max-width: 1500px; margin: 0 auto 20px; }
+h1 {
+  font-family: var(--serif); font-weight: 600; font-size: clamp(26px, 3.4vw, 40px);
+  letter-spacing: -0.01em; line-height: 1.1;
+}
+.sub { color: var(--ink-2); margin: 8px 0 0; max-width: 74ch; }
+.tweaks {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  max-width: 1500px; margin: 18px auto 0;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+}
+.tweaks .grp { display: inline-flex; align-items: center; gap: 8px; }
+.tweaks label { text-transform: uppercase; letter-spacing: 0.08em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button {
+  font: inherit; border: none; background: var(--card); color: var(--ink-2);
+  padding: 5px 11px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.legend { display: inline-flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+.legend button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink-2); background: none; border: 1px solid transparent;
+  padding: 3px 10px; border-radius: 999px;
+}
+.legend button:hover { border-color: var(--line); }
+.legend button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--card); }
+.legend button.off { opacity: .4; }
+.legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.key { display: inline-flex; gap: 13px; align-items: center; }
+.key .chip-demo { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+.chip-demo.filled { background: var(--ink); color: var(--paper); }
+.chip-demo.carry { background: transparent; color: var(--ink-2); border: 1px dashed var(--muted); }
+
+.matrix-wrap {
+  max-width: 1500px; margin: 20px auto 0;
+  border: 1px solid var(--ring); border-radius: 12px; overflow: auto;
+  background: var(--card); max-height: calc(100vh - 190px);
+}
+.matrix {
+  display: grid;
+  grid-template-columns: 190px repeat(6, minmax(150px, 1fr));
+  min-width: 1040px;
+}
+.cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cell:nth-child(7n+1) { border-right: 1px solid var(--line); }
+.cell:nth-child(7n) { border-right: none; }
+
+/* header row (continents) */
+.colhead {
+  position: sticky; top: 0; z-index: 6; background: var(--card);
+  padding: 12px 14px; text-align: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2);
+  border-bottom: 2px solid var(--line);
+}
+.colhead .swatch { display: block; width: 22px; height: 3px; border-radius: 2px; margin: 6px auto 0; }
+.cells.hide .chip { display: none; }
+.corner {
+  position: sticky; top: 0; left: 0; z-index: 8; background: var(--card);
+  border-bottom: 2px solid var(--line); border-right: 2px solid var(--line);
+}
+
+/* era label column (sticky left) */
+.erahead {
+  position: sticky; left: 0; z-index: 5; background: var(--card);
+  border-right: 2px solid var(--line);
+  padding: 14px 16px;
+}
+.erahead .idx { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.erahead .name { font-family: var(--serif); font-weight: 600; font-size: 18px; line-height: 1.15; margin-top: 2px; }
+.erahead .range { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.02em; }
+.erahead .note { font-size: 12px; color: var(--ink-2); margin-top: 7px; line-height: 1.4; }
+
+/* zebra: even era rows get a tint (applied to their cells) */
+.cell.zebra { background: var(--zebra); }
+.erahead.zebra { background: #e4e0d2; }
+
+.cells { padding: 12px 12px; display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
+.cells:empty::after { content: "·"; color: var(--line); margin: 8px auto; }
+
+.chip {
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.2;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid transparent; text-align: left; white-space: normal;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.chip.filled { color: #fff; }
+.chip.carry { background: transparent; border-style: dashed; }
+.chip:hover, .chip:focus-visible { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(44,41,36,0.22); outline: none; }
+.chip.active { box-shadow: 0 0 0 2px var(--ink); }
+
+/* detail card, bottom-right */
+#card {
+  position: fixed; right: clamp(12px, 2vw, 28px); bottom: clamp(12px, 2vw, 28px);
+  width: min(380px, 92vw); z-index: 30; display: none;
+  background: var(--card); border: 1px solid var(--ring); border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 14px 40px rgba(44,41,36,0.28);
+}
+#card.open { display: block; }
+#card .close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; }
+#card .badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink-2); margin-bottom: 8px;
+}
+#card .badge i { width: 10px; height: 10px; border-radius: 3px; }
+#card h3 { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.12; }
+#card .dates { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 5px 0 2px; }
+#card .span { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+#card p { color: var(--ink-2); font-size: 14px; margin-bottom: 16px; }
+#card .links { display: flex; gap: 10px; flex-wrap: wrap; }
+#card .links a {
+  font-family: var(--mono); font-size: 12px; text-decoration: none;
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--accent, var(--ink));
+  color: var(--accent, var(--ink)); transition: background .12s, color .12s;
+}
+#card .links a:hover { background: var(--accent, var(--ink)); color: #fff; }
+footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <h1>World History Timeline</h1>
+  <p class="sub">300,000 years across 84 civilizations, laid out as a grid: <strong>eras down</strong>, <strong>continents across</strong>. Read a row to see what every continent was doing at once; read a column to follow one region through time. Nothing overlaps — the eras do the packing.</p>
+</header>
+
+<div class="tweaks">
+  <div class="grp">
+    <label>Palette</label>
+    <span class="seg" id="palette">
+      <button data-v="vivid" aria-pressed="true">Vivid</button>
+      <button data-v="classic" aria-pressed="false">Classic</button>
+      <button data-v="muted" aria-pressed="false">Muted</button>
+    </span>
+  </div>
+  <span class="key">
+    <span class="chip-demo filled">begins here</span>
+    <span class="chip-demo carry">carries over</span>
+  </span>
+  <span class="legend" id="legend"></span>
+</div>
+
+<div class="matrix-wrap">
+  <div class="matrix" id="matrix"></div>
+</div>
+
+<footer>Click a chip for details. Filled = the civilization begins in that era; dashed = it carries over from an earlier one.</footer>
+
+<aside id="card" aria-label="Civilization details">
+  <button class="close" aria-label="Close">×</button>
+  <span class="badge"><i></i><span class="badge-text"></span></span>
+  <h3></h3>
+  <div class="dates"></div>
+  <div class="span"></div>
+  <p></p>
+  <div class="links">
+    <a class="article-link" href="#">Read the article →</a>
+    <a class="wiki-link" href="#" target="_blank" rel="noopener">Wikipedia ↗</a>
+  </div>
+</aside>
+
+<script src="data.js"></script>
+<script>
+const CONTINENTS = [
+  ["africa","Africa"],["europe","Europe"],["asia","Asia"],
+  ["namerica","North America"],["samerica","South America"],["oceania","Oceania"],
+];
+const NAMES = Object.fromEntries(CONTINENTS);
+
+// 8 discretized eras. A civ overlaps an era when start < era.end && end > era.start.
+// It is "filled" in the era whose range contains its start year, "carry" in later overlapping eras.
+const ERAS = [
+  {name:"Deep prehistory",  start:-300000, end:-10000, note:"First humans, out of Africa, Ice Age hunters."},
+  {name:"First farmers",    start:-10000,  end:-3000,  note:"Farming begins independently on several continents."},
+  {name:"Bronze Age",       start:-3000,   end:-1200,  note:"First cities, writing and states."},
+  {name:"Classical world",  start:-1200,   end:500,    note:"Empires, philosophy and world religions."},
+  {name:"Medieval",         start:500,     end:1500,   note:"Caliphates, dynasties, feudal kingdoms."},
+  {name:"Early modern",     start:1500,    end:1760,   note:"Oceanic contact links the continents."},
+  {name:"Industrial",       start:1760,    end:1945,   note:"Machines, empires and world wars."},
+  {name:"Contemporary",     start:1945,    end:2026,   note:"Decolonization and a connected world."},
+];
+
+const fmtYear = y => y === 2026 ? "present"
+  : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
+  : y + " CE";
+const fmtRange = (a,b) => `${fmtYear(a)} – ${fmtYear(b)}`;
+// simple span; no astronomical year-0 correction (off by one across BCE/CE — negligible at this scale)
+const spanYears = c => (c.end - c.start).toLocaleString("en") + " years";
+
+const matrix = document.getElementById("matrix");
+const card = document.getElementById("card");
+let activeChip = null;
+const focus = new Set(); // focused continents; empty = show all
+
+function applyFocus() {
+  const any = focus.size > 0;
+  legend.querySelectorAll("button").forEach(b => {
+    const on = focus.has(b.dataset.key);
+    b.setAttribute("aria-pressed", on);
+    b.classList.toggle("off", any && !on);
+  });
+  matrix.querySelectorAll(".cells").forEach(c => {
+    c.classList.toggle("hide", any && !focus.has(c.dataset.cont));
+  });
+}
+
+function build() {
+  matrix.innerHTML = "";
+  // header row
+  matrix.appendChild(el("div", "cell corner", ""));
+  CONTINENTS.forEach(([key, label]) => {
+    const h = el("div", "cell colhead");
+    h.innerHTML = `${label}<span class="swatch" style="background:var(--${key})"></span>`;
+    matrix.appendChild(h);
+  });
+
+  ERAS.forEach((era, ri) => {
+    const zebra = ri % 2 === 1 ? " zebra" : "";
+    const head = el("div", "cell erahead" + zebra);
+    head.innerHTML = `<div class="idx">Era ${ri + 1}</div>`
+      + `<div class="name">${era.name}</div>`
+      + `<div class="range">${fmtRange(era.start, era.end)}</div>`
+      + `<div class="note">${era.note}</div>`;
+    matrix.appendChild(head);
+
+    CONTINENTS.forEach(([key]) => {
+      const cell = el("div", "cell cells" + zebra);
+      cell.dataset.cont = key;
+      CIVS.filter(c => c.continent === key && c.start < era.end && c.end > era.start)
+          .sort((a, b) => a.start - b.start)
+          .forEach(c => {
+            const begins = c.start >= era.start && c.start < era.end;
+            const chip = el("button", "chip " + (begins ? "filled" : "carry"));
+            chip.textContent = c.name;
+            if (begins) chip.style.background = `var(--${key})`;
+            else { chip.style.color = `var(--${key})`; chip.style.borderColor = `var(--${key})`; }
+            chip.addEventListener("click", () => openCard(c, key, chip));
+            cell.appendChild(chip);
+          });
+      matrix.appendChild(cell);
+    });
+  });
+}
+
+function openCard(c, key, chip) {
+  if (activeChip) activeChip.classList.remove("active");
+  activeChip = chip; chip.classList.add("active");
+  card.style.setProperty("--accent", `var(--${key})`);
+  card.querySelector(".badge i").style.background = `var(--${key})`;
+  card.querySelector(".badge-text").textContent = NAMES[key];
+  card.querySelector("h3").textContent = c.name;
+  card.querySelector(".dates").textContent = fmtRange(c.start, c.end);
+  card.querySelector(".span").textContent = spanYears(c);
+  card.querySelector("p").textContent = c.blurb;
+  card.querySelector(".article-link").href = `articles/${c.id}.html`;
+  card.querySelector(".wiki-link").href = c.wiki;
+  card.classList.add("open");
+}
+
+function closeCard() {
+  card.classList.remove("open");
+  if (activeChip) { activeChip.classList.remove("active"); activeChip = null; }
+}
+card.querySelector(".close").addEventListener("click", closeCard);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
+
+// legend
+const legend = document.getElementById("legend");
+CONTINENTS.forEach(([key, label]) => {
+  const b = el("button", "");
+  b.dataset.key = key;
+  b.setAttribute("aria-pressed", "false");
+  b.title = "Click to focus this continent";
+  b.innerHTML = `<i style="background:var(--${key})"></i>${label}`;
+  b.addEventListener("click", () => { focus.has(key) ? focus.delete(key) : focus.add(key); applyFocus(); });
+  legend.appendChild(b);
+});
+
+// palette tweak
+document.getElementById("palette").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.documentElement.dataset.palette = btn.dataset.v;
+  [...e.currentTarget.children].forEach(b => b.setAttribute("aria-pressed", b === btn));
+});
+document.documentElement.dataset.palette = "vivid";
+
+function el(tag, cls, html) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+}
+
+build();
+</script>
+</body>
+</html>

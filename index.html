@@ -3,353 +3,348 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>World History — 300,000 Years on One Timeline</title>
+<title>World History Timeline — Eras × Continents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 :root {
-  --surface-1: #fcfcfb;
-  --page: #f9f9f7;
-  --ink: #0b0b0b;
-  --ink-2: #52514e;
-  --muted: #898781;
-  --grid: #e1e0d9;
-  --baseline: #c3c2b7;
-  --ring: rgba(11,11,11,0.10);
+  --paper: #efece1;
+  --card: #faf8f2;
+  --ink: #2c2924;
+  --ink-2: #5c574d;
+  --muted: #8a8377;
+  --line: #d9d4c6;
+  --zebra: #e8e4d7;
+  --ring: rgba(44,41,36,0.12);
+  /* Vivid (default) */
   --africa: #2a78d6;
   --europe: #1baf7a;
-  --asia: #eda100;
-  --namerica: #008300;
-  --samerica: #4a3aa7;
-  --oceania: #e34948;
+  --asia: #d99400;
+  --namerica: #e34948;
+  --samerica: #7a5cc8;
+  --oceania: #12988a;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface-1: #1a1a19;
-    --page: #0d0d0d;
-    --ink: #ffffff;
-    --ink-2: #c3c2b7;
-    --muted: #898781;
-    --grid: #2c2c2a;
-    --baseline: #383835;
-    --ring: rgba(255,255,255,0.10);
-    --africa: #3987e5;
-    --europe: #199e70;
-    --asia: #c98500;
-    --namerica: #008300;
-    --samerica: #9085e9;
-    --oceania: #e66767;
-  }
+:root[data-palette="classic"] {
+  --africa: #4a6fa5;
+  --europe: #5a7d55;
+  --asia: #b0823f;
+  --namerica: #a8534b;
+  --samerica: #6a5a8a;
+  --oceania: #45857b;
+}
+:root[data-palette="muted"] {
+  --africa: #7d8ba0;
+  --europe: #859079;
+  --asia: #ad9d72;
+  --namerica: #a8837e;
+  --samerica: #897f9a;
+  --oceania: #7c968f;
 }
 * { box-sizing: border-box; margin: 0; }
 body {
-  background: var(--page); color: var(--ink);
+  background: var(--paper); color: var(--ink);
   font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 28px clamp(14px, 3vw, 40px) 96px;
 }
-main { max-width: 1400px; margin: 0 auto; padding: 32px 24px 64px; }
-h1 { font-size: 26px; letter-spacing: -0.01em; }
-h2 { font-size: 19px; margin: 40px 0 12px; }
-.sub { color: var(--ink-2); margin: 6px 0 20px; max-width: 70ch; }
+header.masthead { max-width: 1500px; margin: 0 auto 20px; }
+h1 {
+  font-family: var(--serif); font-weight: 600; font-size: clamp(26px, 3.4vw, 40px);
+  letter-spacing: -0.01em; line-height: 1.1;
+}
+.sub { color: var(--ink-2); margin: 8px 0 0; max-width: 74ch; }
+.tweaks {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  max-width: 1500px; margin: 18px auto 0;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+}
+.tweaks .grp { display: inline-flex; align-items: center; gap: 8px; }
+.tweaks label { text-transform: uppercase; letter-spacing: 0.08em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
+.seg button {
+  font: inherit; border: none; background: var(--card); color: var(--ink-2);
+  padding: 5px 11px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.legend { display: inline-flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+.legend button {
+  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  color: var(--ink-2); background: none; border: 1px solid transparent;
+  padding: 3px 10px; border-radius: 999px;
+}
+.legend button:hover { border-color: var(--line); }
+.legend button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--card); }
+.legend button.off { opacity: .4; }
+.legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.key { display: inline-flex; gap: 13px; align-items: center; }
+.key .chip-demo { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+.chip-demo.filled { background: var(--ink); color: var(--paper); }
+.chip-demo.carry { background: transparent; color: var(--ink-2); border: 1px dashed var(--muted); }
 
-.controls { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
-.legend { display: flex; gap: 14px; flex-wrap: wrap; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-size: 13px; }
-.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
-.zoom { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; margin-left: auto; }
+.matrix-wrap {
+  max-width: 1500px; margin: 20px auto 0;
+  border: 1px solid var(--ring); border-radius: 12px; overflow: auto;
+  background: var(--card); max-height: calc(100vh - 190px);
+}
+.matrix {
+  display: grid;
+  grid-template-columns: 190px repeat(6, minmax(150px, 1fr));
+  min-width: 1040px;
+}
+.cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cell:nth-child(7n+1) { border-right: 1px solid var(--line); }
+.cell:nth-child(7n) { border-right: none; }
 
-.chart-card { background: var(--surface-1); border: 1px solid var(--ring); border-radius: 10px; overflow: hidden; }
-#colheads {
-  position: sticky; top: 0; z-index: 5;
-  display: grid; background: var(--surface-1);
-  border-bottom: 1px solid var(--grid); padding: 10px 0 8px;
+/* header row (continents) */
+.colhead {
+  position: sticky; top: 0; z-index: 6; background: var(--card);
+  padding: 12px 14px; text-align: center;
+  font-family: var(--mono); font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2);
+  border-bottom: 2px solid var(--line);
 }
-#colheads span {
-  font-size: 12px; font-weight: 600; color: var(--ink-2);
-  text-transform: uppercase; letter-spacing: 0.06em; text-align: center;
-}
-#chart { position: relative; }
-.bar {
-  position: absolute; border-radius: 4px;
-  cursor: pointer; overflow: hidden;
-  writing-mode: vertical-rl;
-  font-size: 11px; padding: 6px 0; color: #fff;
-  border: none; text-align: left; font-family: inherit; white-space: nowrap;
-}
-.bar:hover, .bar:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 3; }
-.tick {
-  position: absolute; font-size: 11px; color: var(--muted);
-  transform: translateY(-100%); padding-bottom: 2px; text-align: right; padding-right: 10px;
-  font-variant-numeric: tabular-nums;
-}
-.gridline { position: absolute; right: 0; height: 1px; background: var(--grid); }
-.colsep { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
-.eraline { position: absolute; left: 0; right: 0; height: 1px; background: var(--baseline); }
-.eralabel {
-  position: absolute; left: 0; width: 20px;
-  font-size: 10px; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 0.1em;
-  writing-mode: vertical-rl;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
+.colhead .swatch { display: block; width: 22px; height: 3px; border-radius: 2px; margin: 6px auto 0; }
+.cells.hide .chip { display: none; }
+.corner {
+  position: sticky; top: 0; left: 0; z-index: 8; background: var(--card);
+  border-bottom: 2px solid var(--line); border-right: 2px solid var(--line);
 }
 
-#tooltip {
-  position: fixed; pointer-events: none; z-index: 10; display: none;
-  background: var(--surface-1); color: var(--ink); border: 1px solid var(--ring);
-  border-radius: 8px; padding: 8px 10px; font-size: 12.5px; max-width: 280px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+/* era label column (sticky left) */
+.erahead {
+  position: sticky; left: 0; z-index: 5; background: var(--card);
+  border-right: 2px solid var(--line);
+  padding: 14px 16px;
 }
-#tooltip .t-dates { color: var(--muted); font-variant-numeric: tabular-nums; }
+.erahead .idx { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.erahead .name { font-family: var(--serif); font-weight: 600; font-size: 18px; line-height: 1.15; margin-top: 2px; }
+.erahead .range { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.02em; }
+.erahead .note { font-size: 12px; color: var(--ink-2); margin-top: 7px; line-height: 1.4; }
 
-#drawer {
-  position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 92vw); z-index: 20;
-  background: var(--surface-1); border-left: 1px solid var(--ring);
-  padding: 24px; overflow-y: auto; transform: translateX(100%); transition: transform .18s ease;
-  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+/* zebra: even era rows get a tint (applied to their cells) */
+.cell.zebra { background: var(--zebra); }
+.erahead.zebra { background: #e4e0d2; }
+
+.cells { padding: 12px 12px; display: flex; flex-wrap: wrap; gap: 7px; align-content: flex-start; }
+.cells:empty::after { content: "·"; color: var(--line); margin: 8px auto; }
+
+.chip {
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.2;
+  padding: 5px 10px; border-radius: 999px; cursor: pointer;
+  border: 1px solid transparent; text-align: left; white-space: normal;
+  transition: transform .08s ease, box-shadow .08s ease;
 }
-#drawer.open { transform: none; }
-#drawer .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); margin-bottom: 8px; }
-#drawer .chip i { width: 10px; height: 10px; border-radius: 3px; }
-#drawer h3 { font-size: 21px; margin-bottom: 4px; }
-#drawer .dates { color: var(--muted); margin-bottom: 14px; font-variant-numeric: tabular-nums; }
-#drawer p { color: var(--ink-2); margin-bottom: 18px; }
-#drawer a { display: block; margin: 8px 0; color: var(--africa); text-decoration: none; font-weight: 500; }
-#drawer a:hover { text-decoration: underline; }
-#drawer .close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
-#drawer .hint { font-size: 12px; color: var(--muted); margin-top: 20px; }
+.chip.filled { color: #fff; }
+.chip.carry { background: transparent; border-style: dashed; }
+.chip:hover, .chip:focus-visible { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(44,41,36,0.22); outline: none; }
+.chip.active { box-shadow: 0 0 0 2px var(--ink); }
 
-details { margin-top: 16px; }
-summary { cursor: pointer; color: var(--ink-2); }
-table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 13.5px; }
-th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); }
-th { color: var(--muted); font-weight: 600; }
-td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
-table a { color: inherit; }
-
-.gravity { list-style: none; padding: 0; }
-.gravity li { padding: 8px 0 8px 22px; border-left: 2px solid var(--grid); position: relative; margin-left: 8px; }
-.gravity li::before { content: ""; position: absolute; left: -6px; top: 16px; width: 10px; height: 10px; border-radius: 50%; background: var(--baseline); }
-.gravity .when { font-weight: 600; font-variant-numeric: tabular-nums; }
-.gravity .what { color: var(--ink-2); }
-
-.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; padding: 0; list-style: none; }
-.facts li { background: var(--surface-1); border: 1px solid var(--ring); border-radius: 10px; padding: 14px 16px; color: var(--ink-2); }
-footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
-code { background: var(--surface-1); border: 1px solid var(--ring); border-radius: 4px; padding: 1px 5px; font-size: 12.5px; }
+/* detail card, bottom-right */
+#card {
+  position: fixed; right: clamp(12px, 2vw, 28px); bottom: clamp(12px, 2vw, 28px);
+  width: min(380px, 92vw); z-index: 30; display: none;
+  background: var(--card); border: 1px solid var(--ring); border-radius: 14px;
+  padding: 20px 22px; box-shadow: 0 14px 40px rgba(44,41,36,0.28);
+}
+#card.open { display: block; }
+#card .close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; }
+#card .badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink-2); margin-bottom: 8px;
+}
+#card .badge i { width: 10px; height: 10px; border-radius: 3px; }
+#card h3 { font-family: var(--serif); font-weight: 600; font-size: 23px; line-height: 1.12; }
+#card .dates { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 5px 0 2px; }
+#card .span { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-bottom: 12px; }
+#card p { color: var(--ink-2); font-size: 14px; margin-bottom: 16px; }
+#card .links { display: flex; gap: 10px; flex-wrap: wrap; }
+#card .links a {
+  font-family: var(--mono); font-size: 12px; text-decoration: none;
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--accent, var(--ink));
+  color: var(--accent, var(--ink)); transition: background .12s, color .12s;
+}
+#card .links a:hover { background: var(--accent, var(--ink)); color: #fff; }
+footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
 </style>
 </head>
 <body>
-<main class="viz-root">
-  <h1>World History — 300,000 Years on One Timeline</h1>
-  <p class="sub">Every bar is a civilization, culture, or era. Time flows downward on a logarithmic scale: recent centuries get more room than distant millennia. Hover for a summary, click for details, articles, and Wikipedia links.</p>
+<header class="masthead">
+  <h1>World History Timeline</h1>
+  <p class="sub">300,000 years across 84 civilizations, laid out as a grid: <strong>eras down</strong>, <strong>continents across</strong>. Read a row to see what every continent was doing at once; read a column to follow one region through time. Nothing overlaps — the eras do the packing.</p>
+</header>
 
-  <div class="controls">
-    <div class="legend" id="legend"></div>
-    <label class="zoom">Zoom <input type="range" id="zoom" min="1" max="6" step="0.5" value="1"></label>
+<div class="tweaks">
+  <div class="grp">
+    <label>Palette</label>
+    <span class="seg" id="palette">
+      <button data-v="vivid" aria-pressed="true">Vivid</button>
+      <button data-v="classic" aria-pressed="false">Classic</button>
+      <button data-v="muted" aria-pressed="false">Muted</button>
+    </span>
   </div>
+  <span class="key">
+    <span class="chip-demo filled">begins here</span>
+    <span class="chip-demo carry">carries over</span>
+  </span>
+  <span class="legend" id="legend"></span>
+</div>
 
-  <div class="chart-card">
-    <div id="colheads"></div>
-    <div id="chart"></div>
-  </div>
+<div class="matrix-wrap">
+  <div class="matrix" id="matrix"></div>
+</div>
 
-  <details>
-    <summary>Table view — all entries</summary>
-    <table id="table">
-      <thead><tr><th>Name</th><th>Continent</th><th>From</th><th>To</th><th>Summary</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </details>
+<footer>Click a chip for details. Filled = the civilization begins in that era; dashed = it carries over from an earlier one.</footer>
 
-  <h2>The “center of gravity” through history</h2>
-  <ol class="gravity">
-    <li><span class="when">300,000 BCE</span> — <span class="what">Africa (human origins)</span></li>
-    <li><span class="when">10,000 BCE</span> — <span class="what">Fertile Crescent (agriculture)</span></li>
-    <li><span class="when">3000 BCE</span> — <span class="what">Egypt &amp; Mesopotamia</span></li>
-    <li><span class="when">500 BCE</span> — <span class="what">Mediterranean + Persia + India + China</span></li>
-    <li><span class="when">200 CE</span> — <span class="what">Rome and Han China</span></li>
-    <li><span class="when">1200</span> — <span class="what">China (largest economy)</span></li>
-    <li><span class="when">1500</span> — <span class="what">Europe begins oceanic expansion</span></li>
-    <li><span class="when">1800</span> — <span class="what">Western Europe industrializes</span></li>
-    <li><span class="when">1900</span> — <span class="what">Europe dominates globally</span></li>
-    <li><span class="when">1945</span> — <span class="what">United States and Soviet Union</span></li>
-    <li><span class="when">1991</span> — <span class="what">United States predominance</span></li>
-    <li><span class="when">2020s</span> — <span class="what">Multipolar world: US · China · EU · India</span></li>
-  </ol>
-
-  <h2>Surprising overlaps</h2>
-  <ul class="facts">
-    <li>While the Egyptian pyramids were being built (c. 2600 BCE), Stonehenge had not yet reached its final form, and Peru's Norte Chico was already building its own pyramids.</li>
-    <li>When Julius Caesar lived, the Han dynasty ruled China, the Maya were developing cities, and the Silk Road connected East and West.</li>
-    <li>While Europe experienced its so-called “Dark Ages,” Tang China was one of the world's most advanced and prosperous civilizations.</li>
-    <li>Under the Mongol Empire, Eurasia became more interconnected than ever — exchanging goods, ideas, technologies, and diseases.</li>
-    <li>When Columbus reached the Caribbean in 1492, the Ming dynasty governed China, the Aztec and Inca empires were thriving, and Songhai ruled the West African savanna.</li>
-    <li>During Europe's Industrial Revolution, Japan modernized at breakneck speed after the Meiji Restoration, while most of Africa fell under colonial rule.</li>
-    <li>Today, for the first time, every inhabited continent is linked by near-instant communication, global trade, aviation, and digital networks.</li>
-  </ul>
-
-  <footer>Missing an article page? Run <code>./build-articles.sh</code> to generate all civilization articles in parallel.</footer>
-</main>
-
-<div id="tooltip"></div>
-<aside id="drawer" aria-label="Civilization details">
+<aside id="card" aria-label="Civilization details">
   <button class="close" aria-label="Close">×</button>
-  <span class="chip"><i></i><span class="chip-text"></span></span>
+  <span class="badge"><i></i><span class="badge-text"></span></span>
   <h3></h3>
   <div class="dates"></div>
+  <div class="span"></div>
   <p></p>
-  <a class="article-link" href="#">Read the article →</a>
-  <a class="wiki-link" href="#" target="_blank" rel="noopener">Wikipedia ↗</a>
-  <div class="hint">Article pages are generated by <code>build-articles.sh</code>. If the link 404s, run the script.</div>
+  <div class="links">
+    <a class="article-link" href="#">Read the article →</a>
+    <a class="wiki-link" href="#" target="_blank" rel="noopener">Wikipedia ↗</a>
+  </div>
 </aside>
 
 <script src="data.js"></script>
 <script>
-const NOW = 2026, OLDEST = -300000;
 const CONTINENTS = [
-  ["africa", "Africa"], ["europe", "Europe"], ["asia", "Asia"],
-  ["namerica", "North America"], ["samerica", "South America"], ["oceania", "Oceania"],
+  ["africa","Africa"],["europe","Europe"],["asia","Asia"],
+  ["namerica","North America"],["samerica","South America"],["oceania","Oceania"],
 ];
 const NAMES = Object.fromEntries(CONTINENTS);
-const BASE_H = 3400, AXIS_W = 82, MIN_H = 12, LANE_GAP = 4;
 
-// K softens the log near the present so the last few decades don't swallow the chart
-const K = 60;
-const G_NOW = Math.log10(K), G_OLDEST = Math.log10(NOW - OLDEST + K);
-const frac = y => (G_OLDEST - Math.log10(NOW - y + K)) / (G_OLDEST - G_NOW);
+// 8 discretized eras. A civ overlaps an era when start < era.end && end > era.start.
+// It is "filled" in the era whose range contains its start year, "carry" in later overlapping eras.
+const ERAS = [
+  {name:"Deep prehistory",  start:-300000, end:-10000, note:"First humans, out of Africa, Ice Age hunters."},
+  {name:"First farmers",    start:-10000,  end:-3000,  note:"Farming begins independently on several continents."},
+  {name:"Bronze Age",       start:-3000,   end:-1200,  note:"First cities, writing and states."},
+  {name:"Classical world",  start:-1200,   end:500,    note:"Empires, philosophy and world religions."},
+  {name:"Medieval",         start:500,     end:1500,   note:"Caliphates, dynasties, feudal kingdoms."},
+  {name:"Early modern",     start:1500,    end:1760,   note:"Oceanic contact links the continents."},
+  {name:"Industrial",       start:1760,    end:1945,   note:"Machines, empires and world wars."},
+  {name:"Contemporary",     start:1945,    end:2026,   note:"Decolonization and a connected world."},
+];
+
 const fmtYear = y => y === 2026 ? "present"
   : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
   : y + " CE";
+const fmtRange = (a,b) => `${fmtYear(a)} – ${fmtYear(b)}`;
+// simple span; no astronomical year-0 correction (off by one across BCE/CE — negligible at this scale)
+const spanYears = c => (c.end - c.start).toLocaleString("en") + " years";
 
-const chart = document.getElementById("chart");
-const colheads = document.getElementById("colheads");
-const tooltip = document.getElementById("tooltip");
-const drawer = document.getElementById("drawer");
-const zoomEl = document.getElementById("zoom");
+const matrix = document.getElementById("matrix");
+const card = document.getElementById("card");
+let activeChip = null;
+const focus = new Set(); // focused continents; empty = show all
 
-function render() {
-  const H = BASE_H * parseFloat(zoomEl.value);
-  const W = chart.clientWidth;
-  const colW = (W - AXIS_W) / CONTINENTS.length;
-  chart.style.height = H + "px";
-  chart.innerHTML = "";
+function applyFocus() {
+  const any = focus.size > 0;
+  legend.querySelectorAll("button").forEach(b => {
+    const on = focus.has(b.dataset.key);
+    b.setAttribute("aria-pressed", on);
+    b.classList.toggle("off", any && !on);
+  });
+  matrix.querySelectorAll(".cells").forEach(c => {
+    c.classList.toggle("hide", any && !focus.has(c.dataset.cont));
+  });
+}
 
-  colheads.style.gridTemplateColumns = `${AXIS_W}px repeat(${CONTINENTS.length}, 1fr)`;
-  colheads.innerHTML = "<span></span>" + CONTINENTS.map(([, l]) => `<span>${l}</span>`).join("");
-
-  // era bands: hairline across the chart + vertical label in the left strip
-  const eras = [[OLDEST,"Prehistory"],[-4000,"Birth of civilization"],[-1000,"Classical age"],[500,"Medieval"],[1500,"Exploration"],[1800,"Industrial"],[1945,"Modern"]];
-  eras.forEach(([y, label], i) => {
-    const y0 = frac(y) * H, y1 = (i + 1 < eras.length ? frac(eras[i + 1][0]) : 1) * H;
-    if (y0 > 0) {
-      const line = document.createElement("div");
-      line.className = "eraline";
-      line.style.top = y0 + "px";
-      chart.appendChild(line);
-    }
-    const el = document.createElement("div");
-    el.className = "eralabel";
-    el.style.top = y0 + "px";
-    el.style.height = (y1 - y0) + "px";
-    el.textContent = label;
-    chart.appendChild(el);
+function build() {
+  matrix.innerHTML = "";
+  // header row
+  matrix.appendChild(el("div", "cell corner", ""));
+  CONTINENTS.forEach(([key, label]) => {
+    const h = el("div", "cell colhead");
+    h.innerHTML = `${label}<span class="swatch" style="background:var(--${key})"></span>`;
+    matrix.appendChild(h);
   });
 
-  const ticks = [-300000, -100000, -30000, -10000, -3000, -1000, 1, 500, 1000, 1500, 1800, 1900, 1950, 2000, NOW];
-  ticks.forEach(y => {
-    const g = document.createElement("div");
-    g.className = "gridline";
-    g.style.top = (frac(y) * H) + "px";
-    g.style.left = AXIS_W + "px";
-    chart.appendChild(g);
-    const t = document.createElement("div");
-    t.className = "tick";
-    t.style.top = (frac(y) * H) + "px";
-    t.style.width = AXIS_W + "px";
-    if (y === OLDEST) t.style.transform = "translateY(2px)"; // below the line, not clipped off the top
-    t.textContent = fmtYear(y === 1 ? 1 : y).replace(" CE", "");
-    chart.appendChild(t);
-  });
+  ERAS.forEach((era, ri) => {
+    const zebra = ri % 2 === 1 ? " zebra" : "";
+    const head = el("div", "cell erahead" + zebra);
+    head.innerHTML = `<div class="idx">Era ${ri + 1}</div>`
+      + `<div class="name">${era.name}</div>`
+      + `<div class="range">${fmtRange(era.start, era.end)}</div>`
+      + `<div class="note">${era.note}</div>`;
+    matrix.appendChild(head);
 
-  CONTINENTS.forEach(([key, label], ci) => {
-    const colX = AXIS_W + ci * colW;
-    if (ci > 0) {
-      const sep = document.createElement("div");
-      sep.className = "colsep";
-      sep.style.left = colX + "px";
-      chart.appendChild(sep);
-    }
-
-    const civs = CIVS.filter(c => c.continent === key).sort((a, b) => a.start - b.start);
-    // greedy lane packing (lanes are vertical strips inside the column)
-    const laneEnds = [];
-    civs.forEach(c => {
-      const y0 = frac(c.start) * H;
-      let l = laneEnds.findIndex(end => end + 3 <= y0);
-      if (l === -1) { l = laneEnds.length; laneEnds.push(0); }
-      c._lane = l;
-      laneEnds[l] = Math.max(y0 + MIN_H, frac(c.end) * H);
-    });
-    const laneW = (colW - 10) / laneEnds.length;
-
-    civs.forEach(c => {
-      const y0 = frac(c.start) * H, y1 = frac(c.end) * H;
-      const b = document.createElement("button");
-      b.className = "bar";
-      b.style.top = y0 + "px";
-      b.style.height = Math.max(MIN_H, y1 - y0) + "px";
-      b.style.left = (colX + 5 + c._lane * laneW) + "px";
-      b.style.width = (laneW - LANE_GAP) + "px";
-      b.style.background = getComputedStyle(document.documentElement).getPropertyValue("--" + key);
-      if (y1 - y0 >= 40 && laneW - LANE_GAP >= 14) b.textContent = c.name;
-      b.setAttribute("aria-label", `${c.name}, ${fmtYear(c.start)} to ${fmtYear(c.end)}`);
-      b.addEventListener("mousemove", e => {
-        tooltip.style.display = "block";
-        tooltip.innerHTML = `<strong>${c.name}</strong><br><span class="t-dates">${fmtYear(c.start)} – ${fmtYear(c.end)}</span><br>${c.blurb}`;
-        const pad = 14;
-        tooltip.style.left = Math.min(e.clientX + pad, innerWidth - 300) + "px";
-        tooltip.style.top = Math.min(e.clientY + pad, innerHeight - 120) + "px";
-      });
-      b.addEventListener("mouseleave", () => tooltip.style.display = "none");
-      b.addEventListener("click", () => openDrawer(c, key));
-      chart.appendChild(b);
+    CONTINENTS.forEach(([key]) => {
+      const cell = el("div", "cell cells" + zebra);
+      cell.dataset.cont = key;
+      CIVS.filter(c => c.continent === key && c.start < era.end && c.end > era.start)
+          .sort((a, b) => a.start - b.start)
+          .forEach(c => {
+            const begins = c.start >= era.start && c.start < era.end;
+            const chip = el("button", "chip " + (begins ? "filled" : "carry"));
+            chip.textContent = c.name;
+            if (begins) chip.style.background = `var(--${key})`;
+            else { chip.style.color = `var(--${key})`; chip.style.borderColor = `var(--${key})`; }
+            chip.addEventListener("click", () => openCard(c, key, chip));
+            cell.appendChild(chip);
+          });
+      matrix.appendChild(cell);
     });
   });
 }
 
-function openDrawer(c, key) {
-  drawer.querySelector("h3").textContent = c.name;
-  drawer.querySelector(".dates").textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
-  drawer.querySelector("p").textContent = c.blurb;
-  drawer.querySelector(".chip i").style.background = getComputedStyle(document.documentElement).getPropertyValue("--" + key);
-  drawer.querySelector(".chip-text").textContent = NAMES[key];
-  drawer.querySelector(".article-link").href = `articles/${c.id}.html`;
-  drawer.querySelector(".wiki-link").href = c.wiki;
-  drawer.classList.add("open");
+function openCard(c, key, chip) {
+  if (activeChip) activeChip.classList.remove("active");
+  activeChip = chip; chip.classList.add("active");
+  card.style.setProperty("--accent", `var(--${key})`);
+  card.querySelector(".badge i").style.background = `var(--${key})`;
+  card.querySelector(".badge-text").textContent = NAMES[key];
+  card.querySelector("h3").textContent = c.name;
+  card.querySelector(".dates").textContent = fmtRange(c.start, c.end);
+  card.querySelector(".span").textContent = spanYears(c);
+  card.querySelector("p").textContent = c.blurb;
+  card.querySelector(".article-link").href = `articles/${c.id}.html`;
+  card.querySelector(".wiki-link").href = c.wiki;
+  card.classList.add("open");
 }
-drawer.querySelector(".close").addEventListener("click", () => drawer.classList.remove("open"));
-document.addEventListener("keydown", e => { if (e.key === "Escape") drawer.classList.remove("open"); });
+
+function closeCard() {
+  card.classList.remove("open");
+  if (activeChip) { activeChip.classList.remove("active"); activeChip = null; }
+}
+card.querySelector(".close").addEventListener("click", closeCard);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
 
 // legend
 const legend = document.getElementById("legend");
 CONTINENTS.forEach(([key, label]) => {
-  const s = document.createElement("span");
-  const i = document.createElement("i");
-  i.style.background = getComputedStyle(document.documentElement).getPropertyValue("--" + key);
-  s.append(i, label);
-  legend.appendChild(s);
+  const b = el("button", "");
+  b.dataset.key = key;
+  b.setAttribute("aria-pressed", "false");
+  b.title = "Click to focus this continent";
+  b.innerHTML = `<i style="background:var(--${key})"></i>${label}`;
+  b.addEventListener("click", () => { focus.has(key) ? focus.delete(key) : focus.add(key); applyFocus(); });
+  legend.appendChild(b);
 });
 
-// table view
-const tbody = document.querySelector("#table tbody");
-[...CIVS].sort((a, b) => a.start - b.start).forEach(c => {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `<td><a href="articles/${c.id}.html">${c.name}</a></td><td>${NAMES[c.continent]}</td><td class="num">${fmtYear(c.start)}</td><td class="num">${fmtYear(c.end)}</td><td>${c.blurb}</td>`;
-  tbody.appendChild(tr);
+// palette tweak
+document.getElementById("palette").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  document.documentElement.dataset.palette = btn.dataset.v;
+  [...e.currentTarget.children].forEach(b => b.setAttribute("aria-pressed", b === btn));
 });
+document.documentElement.dataset.palette = "vivid";
 
-zoomEl.addEventListener("input", render);
-addEventListener("resize", render);
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
-render();
+function el(tag, cls, html) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+}
+
+build();
 </script>
 </body>
 </html>

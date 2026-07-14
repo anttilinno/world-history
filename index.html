@@ -229,6 +229,15 @@ h1 {
   font-family: var(--mono); font-size: 9.5px; color: #fff; padding: 0 4px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 3px;
 }
+
+/* why-it-rose / why-it-fell causal chain */
+#card .why { margin: -4px 0 16px; display: grid; gap: 6px; }
+#card .why:empty { display: none; }
+#card .why .row { display: grid; grid-template-columns: max-content 1fr; gap: 9px; align-items: baseline; }
+#card .why .lbl { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+#card .why .lbl.rise { color: var(--europe); }
+#card .why .lbl.fall { color: var(--namerica); }
+#card .why .txt { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
 footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
 </style>
 </head>
@@ -280,6 +289,7 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
   <div class="spanbar-cap"><span>300,000 yrs ago</span><span>today</span></div>
   <div class="periods"></div>
   <p></p>
+  <div class="why"></div>
   <div class="meanwhile"></div>
   <div class="links">
     <a class="article-link" href="#">Read the article →</a>
@@ -399,6 +409,195 @@ const PERIODS = {
     {name:"Industrial rise",      start:1877, end:1945, note:"Gilded Age to world war"},
     {name:"Superpower",           start:1945, end:2026, note:"Cold War victor and beyond"},
   ],
+  "kush": [
+    {name:"Kerma",    start:-2500, end:-1500, note:"First Nubian kingdom"},
+    {name:"Napatan",  start:-750,  end:-300,  note:"Kush rules Egypt as the 25th dynasty"},
+    {name:"Meroitic", start:-300,  end:350,   note:"Iron and its own script at Meroë"},
+  ],
+  "carthage": [
+    {name:"Phoenician colony", start:-814, end:-550, note:"Founded by Tyrian settlers"},
+    {name:"Punic Wars",        start:-264, end:-201, note:"Hannibal clashes with Rome"},
+    {name:"Fall of Carthage",  start:-149, end:-146, note:"Third Punic War ends in destruction"},
+  ],
+  "aksum": [
+    {name:"Pre-Christian era", start:100, end:330, note:"Red Sea trade kingdom rises"},
+    {name:"Christian Aksum",   start:330, end:700, note:"Ezana converts; coins minted"},
+    {name:"Decline & isolation", start:700, end:940, note:"Islamic expansion cuts trade routes"},
+  ],
+  "mali-empire": [
+    {name:"Sundiata's founding", start:1235, end:1255, note:"Sundiata Keita unites the Mandinka"},
+    {name:"Golden age",          start:1312, end:1337, note:"Mansa Musa's hajj dazzles the world"},
+    {name:"Decline",             start:1400, end:1600, note:"Songhai and Moroccan pressure fragment it"},
+  ],
+  "minoans": [
+    {name:"Prepalatial",  start:-2700, end:-2000, note:"Early Bronze Age village culture"},
+    {name:"Protopalatial", start:-2000, end:-1700, note:"First palaces built at Knossos"},
+    {name:"Neopalatial",  start:-1700, end:-1450, note:"Peak palaces, frescoes, sea trade"},
+  ],
+  "vikings": [
+    {name:"Raiding age",      start:793, end:850,  note:"Lindisfarne raid opens the Viking Age"},
+    {name:"Settlement era",   start:850, end:980,  note:"Danelaw, Iceland, Greenland colonized"},
+    {name:"Christianization", start:980, end:1066, note:"Kings convert; Hastings ends the age"},
+  ],
+  "crusades": [
+    {name:"First Crusade",         start:1096, end:1099, note:"Jerusalem taken, Crusader states founded"},
+    {name:"Kingdom of Jerusalem",  start:1099, end:1187, note:"Crusader states peak before Saladin"},
+    {name:"Later Crusades",        start:1189, end:1291, note:"Campaigns end with Acre's fall"},
+  ],
+  "renaissance": [
+    {name:"Early Renaissance",    start:1400, end:1490, note:"Florence leads — Brunelleschi, Donatello"},
+    {name:"High Renaissance",     start:1490, end:1527, note:"Leonardo, Michelangelo, Raphael in Rome"},
+    {name:"Northern Renaissance", start:1527, end:1600, note:"Ideas spread to Flanders, Germany, England"},
+  ],
+  "industrial-revolution": [
+    {name:"First Revolution",  start:1760, end:1830, note:"Steam and textiles transform Britain"},
+    {name:"Railway age",       start:1830, end:1870, note:"Rail networks knit continents together"},
+    {name:"Second Revolution", start:1870, end:1914, note:"Steel, electricity, mass production"},
+  ],
+  "sumer": [
+    {name:"Uruk period",     start:-4000, end:-3100, note:"First cities and cuneiform writing"},
+    {name:"Early Dynastic",  start:-2900, end:-2334, note:"Rival city-states like Ur and Lagash"},
+    {name:"Akkadian & Ur III", start:-2334, end:-1900, note:"Sargon's empire, then Ur's last revival"},
+  ],
+  "babylon": [
+    {name:"Old Babylonian", start:-1894, end:-1595, note:"Hammurabi's code and first empire"},
+    {name:"Kassite period", start:-1595, end:-1155, note:"Foreign dynasty rules for centuries"},
+    {name:"Neo-Babylonian", start:-626,  end:-539,  note:"Nebuchadnezzar's gardens; Cyrus conquers"},
+  ],
+  "achaemenid-persia": [
+    {name:"Cyrus's founding",    start:-550, end:-522, note:"Cyrus the Great builds the empire"},
+    {name:"Height under Darius", start:-522, end:-465, note:"Royal Road, Persepolis, wars with Greece"},
+    {name:"Decline & fall",      start:-465, end:-330, note:"Revolts weaken it; Alexander conquers"},
+  ],
+  "maurya": [
+    {name:"Chandragupta",     start:-322, end:-297, note:"Unifies the north, defeats Seleucus"},
+    {name:"Ashoka's golden age", start:-268, end:-232, note:"Buddhism spreads after the Kalinga war"},
+    {name:"Decline",          start:-232, end:-185, note:"Empire fragments after Ashoka"},
+  ],
+  "silk-road": [
+    {name:"Han origins",         start:-130, end:200,  note:"Zhang Qian's missions open trade west"},
+    {name:"Islamic golden age",  start:700,  end:1200, note:"Hubs like Samarkand flourish"},
+    {name:"Pax Mongolica",       start:1240, end:1360, note:"Mongol peace lets merchants cross freely"},
+    {name:"Decline",             start:1360, end:1453, note:"Fragmentation and Ottoman control cut routes"},
+  ],
+  "gupta": [
+    {name:"Rise & conquest", start:320, end:380, note:"Samudragupta expands across the north"},
+    {name:"Golden age",      start:380, end:455, note:"Chandragupta II; Aryabhata; classical arts"},
+    {name:"Decline",         start:455, end:550, note:"Huna invasions fracture the empire"},
+  ],
+  "tang": [
+    {name:"Early Tang", start:618, end:649, note:"Taizong reunifies and reforms China"},
+    {name:"High Tang",  start:649, end:755, note:"Cosmopolitan Chang'an; poetry flourishes"},
+    {name:"Late Tang",  start:755, end:907, note:"An Lushan revolt weakens central power"},
+  ],
+  "ming": [
+    {name:"Early Ming",  start:1368, end:1424, note:"Zhu Yuanzhang founds; Zheng He's voyages"},
+    {name:"Middle Ming", start:1424, end:1573, note:"Consolidation; the Great Wall rebuilt"},
+    {name:"Late Ming",   start:1573, end:1644, note:"Corruption, famine, Manchu conquest"},
+  ],
+  "tokugawa": [
+    {name:"Early Tokugawa", start:1603, end:1650, note:"Unification and sakoku isolation begin"},
+    {name:"Genroku peace",  start:1650, end:1750, note:"Merchant culture, kabuki, ukiyo-e bloom"},
+    {name:"Bakumatsu",      start:1750, end:1868, note:"Crisis, Perry's ships, the shogunate falls"},
+  ],
+  "qing": [
+    {name:"Early conquest", start:1644, end:1683, note:"Manchus conquer China and Taiwan"},
+    {name:"High Qing",      start:1683, end:1796, note:"Kangxi to Qianlong; territory doubles"},
+    {name:"Decline & fall", start:1796, end:1912, note:"Opium Wars, rebellions, collapse"},
+  ],
+  "spanish-samerica": [
+    {name:"Conquest era",     start:1533, end:1570, note:"Pizarro topples the Inca; viceroyalties form"},
+    {name:"Colonial golden age", start:1570, end:1700, note:"Silver from Potosí fuels the empire"},
+    {name:"Bourbon reforms",  start:1700, end:1820, note:"Reforms tighten the grip, then revolts erupt"},
+  ],
+};
+
+// Causal chains: why each civilization rose, and why it fell (or its present pressure).
+const WHY = {
+  "homo-sapiens": {rise:"Evolved in Africa with bigger brains, language and tool cultures gave a survival edge", fall:"Ice Age ended, farming began, and scattered bands settled into the first villages"},
+  "out-of-africa": {rise:"Climate shifts and new tool kits let small bands push beyond Africa into new lands", fall:"Migrants scattered across continents, adapting locally until one exodus became many peoples"},
+  "green-sahara": {rise:"Monsoon rains greened the Sahara, drawing herders and fishers to its lakes and grasslands", fall:"Shifting monsoons dried the Sahara, pushing people to the Nile and further south"},
+  "ancient-egypt": {rise:"Nile floods gave predictable harvests, and Narmer united Upper and Lower Egypt", fall:"Internal strife and foreign conquest ended with Cleopatra's defeat and Roman annexation"},
+  "kush": {rise:"Nile trade and Egyptian contact built Kerma and later Napata into a Nile power", fall:"Aksum's rise cut trade routes, and its army sacked Kush's capital Meroë"},
+  "carthage": {rise:"Phoenician traders built a Mediterranean trade empire from a colony at Carthage", fall:"Rome crushed it in three Punic Wars, razing the city in 146 BCE"},
+  "aksum": {rise:"Red Sea trade in ivory, gold and incense made Aksum a wealthy Horn of Africa power", fall:"Shifting trade routes and environmental strain drained Aksum's wealth and population"},
+  "ghana-empire": {rise:"Control of trans-Saharan gold and salt trade routes built West Africa's first empire", fall:"Drought, overgrazing and rival kingdoms fractured Ghana's grip on the trade routes"},
+  "mali-empire": {rise:"Sundiata's conquest and control of the gold trade made Mali fabulously wealthy", fall:"Succession disputes and Songhai's rise stripped Mali of power and territory"},
+  "songhai": {rise:"Sunni Ali's conquests along the Niger built West Africa's largest empire", fall:"Moroccan muskets and cannon shattered Songhai's armies at the Battle of Tondibi"},
+  "atlantic-slave-trade": {rise:"European demand for plantation labor in the Americas fueled a brutal transatlantic trade", fall:"Abolition movements and British naval suppression gradually shut the trade down"},
+  "colonial-africa": {rise:"The Scramble for Africa carved the continent among European powers after 1884", fall:"Independence movements after WWII forced colonial powers to grant sovereignty"},
+  "modern-africa": {rise:"Independence movements swept colonial rule aside, birthing dozens of new nations", fall:"Still balancing debt, governance and climate pressure while building rapid growth"},
+  "neanderthals": {rise:"Adapted to Ice Age Europe with fire, clothing and cooperative hunting of big game", fall:"Competition with incoming Homo sapiens and climate swings drove them to extinction"},
+  "ice-age-europe": {rise:"Modern humans spread across Europe hunting mammoths and painting cave walls", fall:"Warming climate ended the Ice Age, and farming replaced the hunting way of life"},
+  "megaliths": {rise:"Neolithic farmers raised standing stones and tombs to mark land, ancestors and sky", fall:"Bronze Age societies shifted to new burial customs, and monument building faded"},
+  "minoans": {rise:"Crete's sea trade and palace economy built Europe's first advanced civilization", fall:"A volcanic eruption at Thera and Mycenaean conquest ended Minoan power"},
+  "greek-city-states": {rise:"Rugged geography bred independent poleis whose trade and ideas reshaped the Mediterranean", fall:"Exhausted by internal wars, Greece fell to Macedon and then Rome"},
+  "rome": {rise:"A Latin city-state turned conquered enemies into citizens and built a Mediterranean empire", fall:"Overstretch, civil war and Germanic migrations toppled the western empire"},
+  "byzantine": {rise:"Rome's wealthy eastern half survived as a Greek-speaking Christian empire at Constantinople", fall:"Ottoman cannons breached Constantinople's walls, ending the empire in 1453"},
+  "medieval-europe": {rise:"Rome's collapse left feudal kingdoms built on land, loyalty and the Church's authority", fall:"Plague, war and the rise of centralized states broke the feudal order"},
+  "vikings": {rise:"Scandinavian shipbuilding and raiding skill launched voyages from Ireland to North America", fall:"Christianization and centralizing kingdoms folded Viking raiders into settled states"},
+  "crusades": {rise:"Papal calls to reclaim Jerusalem sent European knights on holy wars to the Levant", fall:"Muslim reconquest under Saladin and the Mamluks pushed Crusader states into the sea"},
+  "renaissance": {rise:"Italian city-state wealth and rediscovered classical texts sparked an explosion of art and science", fall:"Religious wars and shifting trade routes to the Atlantic ended Italy's cultural dominance"},
+  "colonial-empires": {rise:"Gunpowder ships and capital let European states claim territory across the globe", fall:"Two world wars and independence movements dismantled empires piece by piece"},
+  "industrial-revolution": {rise:"Steam power, coal and factory production transformed Britain into the world's workshop", fall:"Industrial rivalry between great powers helped ignite the catastrophe of World War I"},
+  "world-wars": {rise:"Alliance rivalries, nationalism and an assassination in Sarajevo dragged the world to war", fall:"Allied victory in 1945 left Europe divided and empires broken beyond repair"},
+  "cold-war-eu": {rise:"A divided, war-shattered Europe rebuilt under US and Soviet blocs, later uniting in the EU", fall:"Still navigating war in Ukraine, energy shocks and questions over EU unity"},
+  "fertile-crescent": {rise:"Wild wheat and barley in the Levant let hunter-gatherers settle and farm for the first time", fall:"Farming villages grew into cities, and agriculture spread through Mesopotamia and beyond"},
+  "neolithic-china": {rise:"Millet and rice farming along the Yellow and Yangtze rivers built China's first villages", fall:"Rival farming cultures consolidated into the Bronze Age states of Shang China"},
+  "sumer": {rise:"Irrigation along the Tigris and Euphrates built the world's first cities and writing", fall:"Repeated conquest by Akkadians, Amorites and Elamites eroded Sumerian city-states"},
+  "indus-valley": {rise:"Monsoon-fed rivers supported planned cities like Harappa with drainage and trade", fall:"Shifting river courses and climate change drove the decline of its great cities"},
+  "babylon": {rise:"Hammurabi united Mesopotamia under one law code and made Babylon its capital", fall:"The Persian king Cyrus the Great conquered Babylon without a fight in 539 BCE"},
+  "shang": {rise:"Bronze weapons and oracle-bone divination gave Shang kings power over the Yellow River plain", fall:"The Zhou people overthrew a weakened Shang court at the Battle of Muye"},
+  "vedic-india": {rise:"Indo-Aryan migrants brought Sanskrit hymns and cattle culture into the Ganges plain", fall:"The rise of cities and new philosophies gave way to the Mahajanapada kingdoms"},
+  "zhou": {rise:"Zhou rebels overthrew Shang and ruled through a heaven-sanctioned mandate and feudal lords", fall:"Feudal lords stopped obeying the king, fracturing China into the Warring States"},
+  "achaemenid-persia": {rise:"Cyrus the Great united Persians and Medes, building the ancient world's largest empire", fall:"Alexander the Great's invasion toppled Persia after the Battle of Gaugamela"},
+  "maurya": {rise:"Chandragupta seized power after Alexander's retreat and unified most of India", fall:"Weak successors after Ashoka let the empire fragment into regional kingdoms"},
+  "han": {rise:"Peasant rebel Liu Bang founded a dynasty that expanded trade, bureaucracy and Confucian rule", fall:"Court corruption, peasant revolt and warlordism split Han China into three kingdoms"},
+  "silk-road": {rise:"Han envoys opened trade routes linking China to Central Asia, Persia and Rome", fall:"Ottoman control of key routes and rising sea trade shifted commerce to the oceans"},
+  "gupta": {rise:"Chandragupta I's conquests ushered in a golden age of Indian science, art and math", fall:"Hunnic invasions from Central Asia broke Gupta power across northern India"},
+  "tang": {rise:"Reunification after Sui collapse brought Tang China a cosmopolitan golden age of trade and poetry", fall:"The An Lushan rebellion and regional warlords bled the dynasty to collapse"},
+  "song": {rise:"Song emperors reunified China and drove an economic revolution in trade, printing and gunpowder", fall:"Mongol armies under Kublai Khan conquered the last Song holdouts by 1279"},
+  "mongol-empire": {rise:"Genghis Khan united the steppe tribes and built history's largest contiguous land empire", fall:"The empire split among rival khanates and its Chinese branch was overthrown by Ming rebels"},
+  "ottoman": {rise:"A small Anatolian beylik expanded by conquest, capturing Constantinople in 1453", fall:"WWI defeat and nationalist revolution dissolved the empire into modern Turkey"},
+  "ming": {rise:"Rebel leader Zhu Yuanzhang drove out Mongol rulers and restored native Chinese rule", fall:"Peasant rebellion and Manchu invasion toppled the dynasty in 1644"},
+  "mughal": {rise:"Babur's cavalry victory at Panipat founded a Muslim empire over most of India", fall:"Weak emperors, Maratha wars and British expansion reduced Mughal rule to a figurehead"},
+  "tokugawa": {rise:"Tokugawa Ieyasu unified feudal Japan after Sekigahara and enforced two centuries of peace", fall:"American gunboats forced Japan open, and reformers restored imperial rule in 1868"},
+  "qing": {rise:"Manchu horsemen conquered a crumbling Ming China and ruled it for over two centuries", fall:"Foreign wars, unequal treaties and revolution ended China's last imperial dynasty"},
+  "meiji": {rise:"Reformers restored the emperor and rapidly industrialized Japan on Western models", fall:"Having modernized Japan into a great power, it entered the militarist Taisho-Showa era"},
+  "modern-asia": {rise:"Postwar independence and industrial policy turned Asian nations into economic powerhouses", fall:"Still balancing rapid growth against demographic shifts and regional tensions"},
+  "beringia": {rise:"Lower Ice Age sea levels exposed a land bridge, letting hunters walk from Siberia to Alaska", fall:"Melting glaciers flooded the bridge, isolating the Americas as sea levels rose"},
+  "mound-builders": {rise:"Hunter-gatherers along American rivers built earthen mounds for ritual and burial", fall:"The tradition gradually gave way to the more complex Hopewell and Mississippian cultures"},
+  "olmec": {rise:"Fertile Gulf Coast lowlands supported Mesoamerica's founding culture and giant stone heads", fall:"Environmental shifts and changing trade networks led its centers to be abandoned"},
+  "maya": {rise:"Intensive farming in the jungle lowlands built city-states with writing, math and astronomy", fall:"Drought, warfare and Spanish conquest ended Maya political independence"},
+  "teotihuacan": {rise:"A planned megacity in the Valley of Mexico dominated trade and religion across Mesoamerica", fall:"Internal unrest and possible drought led to the city's burning and abandonment"},
+  "hopewell": {rise:"River-based trade networks linked eastern North America in shared burial and mound rituals", fall:"The exchange network quietly faded as regional cultures pursued more local paths"},
+  "ancestral-pueblo": {rise:"Farmers in the arid Southwest built cliff dwellings like Chaco Canyon and Mesa Verde", fall:"A prolonged drought drove communities to abandon their cliff cities and disperse"},
+  "mississippian": {rise:"Maize farming along the Mississippi built mound cities like Cahokia, North America's largest", fall:"Climate stress, overhunting and later European disease unraveled its chiefdoms"},
+  "aztec": {rise:"Mexica settlers built Tenochtitlan on a lake and conquered a tribute empire across Mexico", fall:"Cortés allied with rival tribes, and smallpox helped topple the Aztec capital in 1521"},
+  "colonial-namerica": {rise:"Spanish, French and English powers planted colonies across a continent emptied by disease", fall:"Colonial taxation without representation sparked revolution and independence"},
+  "usa": {rise:"Thirteen colonies won independence and expanded across a continent on revolutionary ideals", fall:"Still contending with deep political polarization and its role as a global power"},
+  "first-south-americans": {rise:"Migrating hunter-gatherers followed coasts and land routes deep into South America", fall:"As populations spread and settled, distinct regional cultures began to emerge"},
+  "norte-chico": {rise:"Coastal fishing and irrigation farming built the Americas' oldest known urban centers", fall:"Its pyramid-building cities were gradually eclipsed by later Andean cultures"},
+  "chavin": {rise:"A religious cult centered on Chavín de Huántar spread its art and ideology across the Andes", fall:"Its unifying religious influence faded as regional cultures reasserted local identities"},
+  "paracas": {rise:"Desert coastal communities in Peru developed elaborate textiles and mummy burial practices", fall:"The culture gave way to its artistic successor, the Nazca, further south"},
+  "moche": {rise:"Irrigation engineering on Peru's north coast built a powerful society of warrior-priests", fall:"El Niño floods and drought devastated Moche farmland and toppled its elite"},
+  "nazca": {rise:"Desert communities in Peru carved the famous Nazca Lines and built underground aqueducts", fall:"Prolonged drought exhausted their water systems and dispersed the population"},
+  "tiwanaku": {rise:"Raised-field farming around Lake Titicaca fed a powerful highland Andean capital", fall:"A long drought crippled its farming system, and the city was abandoned"},
+  "wari": {rise:"Wari built the Andes' first expansive empire through roads, terracing and conquest", fall:"Prolonged drought and internal strife fragmented the Wari state before the Inca"},
+  "inca": {rise:"Pachacuti's conquests built the largest empire in the pre-Columbian Americas along the Andes", fall:"Civil war and Spanish conquistadors led by Pizarro toppled the Inca in 1533"},
+  "spanish-samerica": {rise:"Spain built a colonial empire on Andean and American silver mined by forced native labor", fall:"Napoleon's invasion of Spain and Enlightenment ideals sparked independence wars"},
+  "independence-samerica": {rise:"Creole elites inspired by Enlightenment ideals and Spain's weakness launched wars of liberation", fall:"Victories under Bolívar and San Martín splintered into today's separate republics"},
+  "modern-samerica": {rise:"Newly independent republics built modern nations from the wreckage of Spanish colonial rule", fall:"Still working through cycles of debt, inequality and political instability"},
+  "aboriginal-australians": {rise:"The first humans reached Australia by sea, developing the world's oldest continuous culture", fall:"Still asserting land rights and cultural survival after two centuries of colonization"},
+  "kuk-agriculture": {rise:"New Guinea highlanders independently domesticated taro and bananas in swampy fields", fall:"The tradition persisted for millennia, gradually absorbing later crops and trade contacts"},
+  "austronesian-expansion": {rise:"Outrigger canoe technology let Austronesian speakers island-hop from Taiwan across the Pacific", fall:"The expansion wave ended once its seafarers had settled nearly every habitable Pacific island"},
+  "lapita": {rise:"Distinctive pottery-making seafarers pushed east from the Bismarck Archipelago into the Pacific", fall:"Its pottery tradition faded as descendant cultures spread further into Polynesia"},
+  "polynesian-navigation": {rise:"Star navigation and double-hulled canoes let voyagers settle the remotest Pacific islands", fall:"Having settled the Pacific triangle from Hawaii to Rapa Nui, long-distance voyaging waned"},
+  "ancient-hawaii": {rise:"Polynesian voyagers settled Hawaii and built a complex chiefdom society around taro farming", fall:"Captain Cook's 1778 arrival opened the islands to devastating foreign disease and influence"},
+  "maori": {rise:"Polynesian voyagers settled Aotearoa and built a distinct Māori society and language", fall:"Still working to reclaim land and language rights under Treaty of Waitangi settlements"},
+  "european-oceania": {rise:"European explorers like Tasman and Cook charted and mapped the Pacific and Australia", fall:"Cook's charts paved the way for British settlement and colonization"},
+  "british-australia": {rise:"Britain founded a penal colony at Sydney Cove that grew through convict and free settlement", fall:"The colonies federated into the independent Commonwealth of Australia in 1901"},
+  "modern-oceania": {rise:"Federation and independence built modern Pacific nations from colonial territories", fall:"Still confronting rising seas and climate threats to low-lying island nations"},
 };
 
 const fmtYear = y => y === 2026 ? "present"
@@ -494,6 +693,21 @@ function buildMeanwhile(c) {
   });
 }
 
+function buildWhy(c) {
+  const box = card.querySelector(".why");
+  const w = WHY[c.id];
+  if (!w || (!w.rise && !w.fall)) { box.innerHTML = ""; return; }
+  const fallLabel = c.end === 2026 ? "Now" : "Fell";
+  box.innerHTML =
+    (w.rise ? `<div class="row"><span class="lbl rise">▲ Rose</span><span class="txt"></span></div>` : "") +
+    (w.fall ? `<div class="row"><span class="lbl fall">▼ ${fallLabel}</span><span class="txt"></span></div>` : "");
+  // set text via textContent to avoid HTML injection from data
+  const txts = box.querySelectorAll(".txt");
+  let i = 0;
+  if (w.rise) txts[i++].textContent = w.rise;
+  if (w.fall) txts[i++].textContent = w.fall;
+}
+
 function buildPeriods(c) {
   const box = card.querySelector(".periods");
   const ps = PERIODS[c.id];
@@ -530,6 +744,7 @@ function openCard(c, chip) {
   fill.style.background = `var(--${key})`;
   buildPeriods(c);
   card.querySelector("p").textContent = c.blurb;
+  buildWhy(c);
   buildMeanwhile(c);
   card.querySelector(".article-link").href = `articles/${c.id}.html`;
   card.querySelector(".wiki-link").href = c.wiki;

@@ -72,6 +72,7 @@
   <input type="range" id="slider" min="0" max="0" value="0" step="1" aria-label="Year">
   <div class="controls">
     <button id="play" type="button">▶ Play</button>
+    <button id="arcs" type="button" aria-pressed="true">✈ Routes</button>
     <button data-jump="-300000" type="button">300k BCE</button>
     <button data-jump="-3000" type="button">3000 BCE</button>
     <button data-jump="1" type="button">1 CE</button>
@@ -115,6 +116,31 @@ const COORDS = {
 const COLORS = { africa:"#2a78d6", europe:"#1baf7a", asia:"#d99400", namerica:"#e34948", samerica:"#7a5cc8", oceania:"#12988a" };
 const NAMES = { africa:"Africa", europe:"Europe", asia:"Asia", namerica:"North America", samerica:"South America", oceania:"Oceania" };
 
+// Great migrations, trade routes and expansions — animated arcs, shown for the years they were active.
+const ROUTES = [
+  {label:"Out-of-Africa migration", from:[9,40], to:[31,35], startYear:-70000, endYear:-45000, type:"migration"},
+  {label:"Peopling of the Americas", from:[66,170], to:[65,-155], startYear:-20000, endYear:-14000, type:"migration"},
+  {label:"Peopling of the Americas", from:[65,-155], to:[-41.5,-73], startYear:-16000, endYear:-12000, type:"migration"},
+  {label:"Austronesian expansion", from:[23.7,121], to:[-6,106], startYear:-3000, endYear:-1500, type:"migration"},
+  {label:"Austronesian expansion", from:[0.5,114], to:[-18.9,47.5], startYear:300, endYear:1200, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[20,-157], startYear:300, endYear:800, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-27.1,-109.4], startYear:700, endYear:1200, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-37,175], startYear:1200, endYear:1300, type:"migration"},
+  {label:"Silk Road", from:[34.3,108.9], to:[41,29], startYear:-130, endYear:1450, type:"trade"},
+  {label:"Trans-Saharan gold/salt trade", from:[16.8,-3], to:[31.6,-8], startYear:700, endYear:1600, type:"trade"},
+  {label:"Atlantic slave trade", from:[6,3], to:[18.5,-70], startYear:1500, endYear:1870, type:"trade"},
+  {label:"Columbian voyages", from:[37.2,-6.4], to:[24,-75], startYear:1492, endYear:1600, type:"exchange"},
+  {label:"Viking voyages", from:[59,10.7], to:[54,-1], startYear:793, endYear:1000, type:"conquest"},
+  {label:"Viking voyages", from:[64,-22], to:[51.6,-55.5], startYear:985, endYear:1020, type:"migration"},
+  {label:"Viking voyages", from:[59.3,18.1], to:[41,29], startYear:800, endYear:1100, type:"trade"},
+  {label:"Mongol conquests", from:[47.2,102.8], to:[39.9,116.4], startYear:1206, endYear:1279, type:"conquest"},
+  {label:"Mongol conquests", from:[47.2,102.8], to:[47.5,19], startYear:1206, endYear:1242, type:"conquest"},
+  {label:"Indian Ocean monsoon trade", from:[12.8,45], to:[11.25,75.8], startYear:-100, endYear:1500, type:"trade"},
+  {label:"Indian Ocean monsoon trade", from:[11.25,75.8], to:[2.2,102.25], startYear:-100, endYear:1500, type:"trade"},
+  {label:"Bantu expansion", from:[6,10], to:[-26,28], startYear:-1000, endYear:500, type:"migration"},
+];
+const ARC_COLORS = { migration:"#e6b800", trade:"#37c0d8", exchange:"#8f7cff", conquest:"#ff5a4d" };
+
 const fmtYear = y => y === 2026 ? "present"
   : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
   : y + " CE";
@@ -132,10 +158,18 @@ const globe = Globe()(document.getElementById("globeViz"))
   .atmosphereColor("#6f9bd8")
   .pointLat("lat").pointLng("lng")
   .pointColor(d => COLORS[d.continent])
-  .pointAltitude(0.03)
-  .pointRadius(0.55)
+  // longer-lived civilizations sit taller and wider (log-scaled span)
+  .pointAltitude(d => 0.015 + 0.06 * Math.min(1, Math.log10(Math.max(d.end - d.start, 10)) / 5))
+  .pointRadius(d => 0.35 + 0.45 * Math.min(1, Math.log10(Math.max(d.end - d.start, 10)) / 5))
   .pointLabel(d => `<div style="font-family:sans-serif;font-size:12px"><b>${d.name}</b><br>${fmtYear(d.start)} – ${fmtYear(d.end)}</div>`)
-  .onPointClick(d => { window.location.href = `articles/${d.id}.html`; });
+  .onPointClick(d => { window.location.href = `articles/${d.id}.html`; })
+  .arcStartLat(d => d.from[0]).arcStartLng(d => d.from[1])
+  .arcEndLat(d => d.to[0]).arcEndLng(d => d.to[1])
+  .arcColor(d => [ARC_COLORS[d.type] || "#ffffff", ARC_COLORS[d.type] || "#ffffff"])
+  .arcStroke(0.6)
+  .arcDashLength(0.5).arcDashGap(0.25).arcDashAnimateTime(2600)
+  .arcAltitudeAutoScale(0.45)
+  .arcLabel(d => `<div style="font-family:sans-serif;font-size:12px"><b>${d.label}</b><br>${d.type} · ${fmtYear(d.startYear)} – ${fmtYear(d.endYear)}</div>`);
 
 globe.controls().autoRotate = true;
 globe.controls().autoRotateSpeed = 0.45;
@@ -147,10 +181,12 @@ slider.max = STOPS.length - 1;
 
 function aliveAt(year) { return PLACED.filter(c => c.start <= year && c.end >= year); }
 
+let showArcs = true;
 function render(idx) {
   const year = STOPS[idx];
   const alive = aliveAt(year);
   globe.pointsData(alive);
+  globe.arcsData(showArcs ? ROUTES.filter(a => a.startYear <= year && a.endYear >= year) : []);
   yearEl.textContent = fmtYear(year);
   countEl.textContent = `${alive.length} civilization${alive.length === 1 ? "" : "s"} present`;
 }
@@ -176,6 +212,14 @@ play.addEventListener("click", () => {
     if (v > +slider.max) v = 0;
     slider.value = v; render(v);
   }, 550);
+});
+
+// routes toggle
+const arcsBtn = document.getElementById("arcs");
+arcsBtn.addEventListener("click", () => {
+  showArcs = !showArcs;
+  arcsBtn.setAttribute("aria-pressed", showArcs);
+  render(+slider.value);
 });
 
 // start at 1 CE — a busy moment

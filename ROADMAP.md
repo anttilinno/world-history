@@ -16,8 +16,17 @@ ideas, with enough hooks that a curious child can dive into details.
 - ✅ **All fast wins** — Meanwhile, deep links, year probe, search, Surprise me,
   span bar.
 
-Every roadmap headline is now shipped in some form. What remains is depth:
-sub-periods for more of the 84 civilizations, and the deeper zoom sketches below.
+Depth added on top of the headlines:
+
+- ✅ **Rise/fall why-chains** — every one of the 84 cards now shows why the
+  civilization rose and why it fell (or its present-day pressure).
+- ✅ **Sub-periods** — 35 civilizations now have a `PERIODS` timeline.
+- ✅ **Globe routes** — animated migration & trade arcs (Out-of-Africa, Silk
+  Road, Austronesian & Polynesian voyaging, Atlantic slave trade, Mongol
+  conquests…), each shown for the years it was active; markers sized by longevity.
+
+Every roadmap headline is shipped. What remains is more of the same depth:
+`PERIODS` for the rest of the 84, and any deeper zoom sketches below.
 
 ## 1. Multiple zoom levels
 

@@ -37,7 +37,14 @@
   .scrubber .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .scrubber .year { font-family: var(--serif); font-size: 26px; font-weight: 600; }
   .scrubber .count { font-size: 12px; color: #aab3c2; }
-  .scrubber input[type=range] { width: 100%; margin-top: 10px; accent-color: #eef1f6; cursor: pointer; }
+  .scrubber .sliderrow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .scrubber input[type=range] { flex: 1; accent-color: #eef1f6; cursor: pointer; }
+  .scrubber .step {
+    font-size: 13px; line-height: 1; padding: 6px 9px; color: #cfd6e2;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 8px; cursor: pointer; flex: none;
+  }
+  .scrubber .step:hover { background: rgba(255,255,255,0.12); }
   .scrubber .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .scrubber button {
     font: inherit; font-size: 11px; cursor: pointer; color: #cfd6e2;
@@ -69,7 +76,12 @@
     <span class="year" id="year">—</span>
     <span class="count" id="count"></span>
   </div>
-  <input type="range" id="slider" min="0" max="0" value="0" step="1" aria-label="Year">
+  <div class="sliderrow">
+    <button id="prev" type="button" class="step" aria-label="Previous event">◀</button>
+    <input type="range" id="slider" min="0" max="0" value="0" step="1" aria-label="Year" list="stops">
+    <button id="next" type="button" class="step" aria-label="Next event">▶</button>
+  </div>
+  <datalist id="stops"></datalist>
   <div class="controls">
     <button id="play" type="button">▶ Play</button>
     <button id="arcs" type="button" aria-pressed="true">✈ Routes</button>
@@ -178,6 +190,8 @@ const slider = document.getElementById("slider");
 const yearEl = document.getElementById("year");
 const countEl = document.getElementById("count");
 slider.max = STOPS.length - 1;
+// one tick per stop (every slider position is an alive-set change)
+document.getElementById("stops").innerHTML = STOPS.map((_, i) => `<option value="${i}">`).join("");
 
 function aliveAt(year) { return PLACED.filter(c => c.start <= year && c.end >= year); }
 
@@ -192,6 +206,11 @@ function render(idx) {
 }
 
 slider.addEventListener("input", () => render(+slider.value));
+
+// step one event left/right
+const step = n => { const v = Math.min(+slider.max, Math.max(0, +slider.value + n)); slider.value = v; render(v); };
+document.getElementById("prev").addEventListener("click", () => step(-1));
+document.getElementById("next").addEventListener("click", () => step(1));
 
 // era jump buttons
 document.querySelectorAll("[data-jump]").forEach(b => {

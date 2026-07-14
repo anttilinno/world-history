@@ -95,8 +95,7 @@ h1 {
   min-width: 1040px;
 }
 .cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.cell:nth-child(7n+1) { border-right: 1px solid var(--line); }
-.cell:nth-child(7n) { border-right: none; }
+.cell.lastcol { border-right: none; }
 
 /* header row (continents) */
 .colhead {
@@ -123,6 +122,17 @@ h1 {
 .erahead .name { font-family: var(--serif); font-weight: 600; font-size: 18px; line-height: 1.15; margin-top: 2px; }
 .erahead .range { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.02em; }
 .erahead .note { font-size: 12px; color: var(--ink-2); margin-top: 7px; line-height: 1.4; }
+
+/* transition band between era rows: the "gear" that turns + why */
+.transition {
+  grid-column: 1 / -1; position: sticky; left: 0;
+  display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap;
+  padding: 8px 16px; background: var(--paper); border-bottom: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11px; color: var(--ink-2); line-height: 1.5;
+}
+.transition .arrow { color: var(--muted); }
+.transition b { color: var(--ink); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.transition .why { color: var(--muted); font-family: var(--serif); font-size: 13px; font-style: italic; }
 
 /* zebra: even era rows get a tint (applied to their cells) */
 .cell.zebra { background: var(--zebra); }
@@ -168,6 +178,57 @@ h1 {
   color: var(--accent, var(--ink)); transition: background .12s, color .12s;
 }
 #card .links a:hover { background: var(--accent, var(--ink)); color: #fff; }
+
+/* fast-win controls */
+.tweaks .inp {
+  font: inherit; font-family: var(--mono); font-size: 12px;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+  color: var(--ink); padding: 5px 9px; width: 9ch;
+}
+.tweaks .inp::placeholder { color: var(--muted); }
+.tweaks .inp:focus { outline: none; border-color: var(--ink); }
+.tweaks .btn {
+  font: inherit; font-family: var(--mono); font-size: 12px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 7px; background: var(--card);
+  color: var(--ink-2); padding: 5px 11px;
+}
+.tweaks .btn:hover { border-color: var(--ink); color: var(--ink); }
+.chip.dim { opacity: .16; }
+
+/* span bar in card */
+#card .spanbar { position: relative; height: 6px; border-radius: 3px; background: var(--line); margin: 0 0 4px; }
+#card .spanbar-fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; min-width: 2px; }
+#card .spanbar-cap { font-family: var(--mono); font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 14px; }
+
+/* meanwhile panel in card */
+#card .meanwhile { margin: 0 0 16px; }
+#card .meanwhile:empty { display: none; }
+#card .meanwhile h4 {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 7px;
+}
+#card .meanwhile .mw { display: flex; flex-wrap: wrap; gap: 6px; }
+#card .meanwhile button {
+  font-family: var(--mono); font-size: 11px; cursor: pointer; text-align: left;
+  border: 1px solid var(--line); background: none; color: var(--ink-2);
+  padding: 3px 9px; border-radius: 999px;
+}
+#card .meanwhile button:hover { border-color: var(--ink); color: var(--ink); }
+#card .meanwhile button i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+/* civilization "zoom": sub-period timeline in the card */
+#card .periods { margin: 0 0 16px; }
+#card .periods:empty { display: none; }
+#card .periods h4 {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 7px;
+}
+#card .periods .track { position: relative; height: 22px; background: var(--zebra); border-radius: 4px; }
+#card .periods .seg {
+  position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 9.5px; color: #fff; padding: 0 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 3px;
+}
 footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
 </style>
 </head>
@@ -186,6 +247,16 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
       <button data-v="muted" aria-pressed="false">Muted</button>
     </span>
   </div>
+  <div class="grp">
+    <label>Year</label>
+    <input id="probe" class="inp" type="text" placeholder="480 BCE" aria-label="Highlight civilizations alive in a given year">
+  </div>
+  <div class="grp">
+    <label>Find</label>
+    <input id="search" class="inp" type="text" placeholder="rome…" aria-label="Highlight civilizations by name">
+  </div>
+  <button id="surprise" class="btn" type="button">Surprise me</button>
+  <a class="btn" href="globe.html">🌍 Globe</a>
   <span class="key">
     <span class="chip-demo filled">begins here</span>
     <span class="chip-demo carry">carries over</span>
@@ -205,7 +276,11 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
   <h3></h3>
   <div class="dates"></div>
   <div class="span"></div>
+  <div class="spanbar"><div class="spanbar-fill"></div></div>
+  <div class="spanbar-cap"><span>300,000 yrs ago</span><span>today</span></div>
+  <div class="periods"></div>
   <p></p>
+  <div class="meanwhile"></div>
   <div class="links">
     <a class="article-link" href="#">Read the article →</a>
     <a class="wiki-link" href="#" target="_blank" rel="noopener">Wikipedia ↗</a>
@@ -232,6 +307,56 @@ const ERAS = [
   {name:"Industrial",       start:1760,    end:1945,   note:"Machines, empires and world wars."},
   {name:"Contemporary",     start:1945,    end:2026,   note:"Decolonization and a connected world."},
 ];
+
+// The phase changes between eras — the memorable gears, each with its "why".
+// One per era boundary (era N → era N+1); indexed 0..6.
+const TRANSITIONS = [
+  {label:"Hunting → farming",            why:"A warming climate lets people settle and plant; food surplus frees hands from the daily hunt."},
+  {label:"Villages → cities",            why:"Grain surplus concentrates people; the first towns need records — and writing is born."},
+  {label:"Cities → states",              why:"Temples and kings marshal labour and armies; scattered cities merge into kingdoms."},
+  {label:"States → world empires",       why:"Iron, cavalry and roads let single powers rule millions across whole regions."},
+  {label:"Empires → dynasties & faiths", why:"As Rome and Han fall, religions and dynasties become the glue holding society together."},
+  {label:"Kingdoms → oceanic powers",    why:"Ships cross oceans; trade, guns and disease link every continent for the first time."},
+  {label:"Industry → information age",   why:"Machines, then computers, multiply what one person can do — and wire the planet together."},
+];
+
+// Zoom in: internal periods of marquee civilizations. Optional — a civ with no
+// entry simply shows no sub-timeline. Gaps between periods are intervening
+// transitional ages (e.g. Egypt's Intermediate Periods).
+const PERIODS = {
+  "ancient-egypt": [
+    {name:"Old Kingdom",   start:-2686, end:-2181, note:"Age of the great pyramids"},
+    {name:"Middle Kingdom", start:-2055, end:-1650, note:"Reunification and classical literature"},
+    {name:"New Kingdom",   start:-1550, end:-1069, note:"Empire — Hatshepsut, Tutankhamun, Ramesses"},
+    {name:"Late Period",   start:-664,  end:-332,  note:"Native and Persian dynasties"},
+    {name:"Ptolemaic",     start:-332,  end:-30,   note:"Greek pharaohs, ending with Cleopatra"},
+  ],
+  "rome": [
+    {name:"Republic",    start:-509, end:-27,  note:"Senate and the conquest of the Mediterranean"},
+    {name:"Empire",      start:-27,  end:284,  note:"Pax Romana — the imperial peak"},
+    {name:"Late Empire", start:284,  end:476,  note:"Division, crisis and the western collapse"},
+  ],
+  "greek-city-states": [
+    {name:"Archaic",     start:-800, end:-480, note:"Rise of the polis and colonization"},
+    {name:"Classical",   start:-480, end:-323, note:"Athens, Sparta, philosophy and drama"},
+    {name:"Hellenistic", start:-323, end:-146, note:"Alexander spreads Greek culture across Asia"},
+  ],
+  "maya": [
+    {name:"Preclassic",  start:-1000, end:250,  note:"First cities and monuments"},
+    {name:"Classic",     start:250,   end:900,  note:"Peak of the city-states; writing and astronomy"},
+    {name:"Postclassic", start:900,   end:1524, note:"Northern revival until the Spanish"},
+  ],
+  "byzantine": [
+    {name:"Early",  start:330,  end:610,  note:"Justinian reconquers the west"},
+    {name:"Middle", start:610,  end:1204, note:"Macedonian golden age"},
+    {name:"Late",   start:1204, end:1453, note:"Decline to the fall of Constantinople"},
+  ],
+  "ottoman": [
+    {name:"Rise",      start:1299, end:1453, note:"From frontier beylik to the fall of Constantinople"},
+    {name:"Classical", start:1453, end:1683, note:"Peak under Suleiman the Magnificent"},
+    {name:"Decline",   start:1683, end:1922, note:"The long retreat, 'the sick man of Europe'"},
+  ],
+};
 
 const fmtYear = y => y === 2026 ? "present"
   : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
@@ -261,13 +386,19 @@ function build() {
   matrix.innerHTML = "";
   // header row
   matrix.appendChild(el("div", "cell corner", ""));
-  CONTINENTS.forEach(([key, label]) => {
-    const h = el("div", "cell colhead");
+  CONTINENTS.forEach(([key, label], ci) => {
+    const h = el("div", "cell colhead" + (ci === CONTINENTS.length - 1 ? " lastcol" : ""));
     h.innerHTML = `${label}<span class="swatch" style="background:var(--${key})"></span>`;
     matrix.appendChild(h);
   });
 
   ERAS.forEach((era, ri) => {
+    if (ri > 0) {
+      const t = TRANSITIONS[ri - 1];
+      const band = el("div", "transition");
+      band.innerHTML = `<span class="arrow">↓</span><b>${t.label}</b><span class="why">${t.why}</span>`;
+      matrix.appendChild(band);
+    }
     const zebra = ri % 2 === 1 ? " zebra" : "";
     const head = el("div", "cell erahead" + zebra);
     head.innerHTML = `<div class="idx">Era ${ri + 1}</div>`
@@ -276,8 +407,8 @@ function build() {
       + `<div class="note">${era.note}</div>`;
     matrix.appendChild(head);
 
-    CONTINENTS.forEach(([key]) => {
-      const cell = el("div", "cell cells" + zebra);
+    CONTINENTS.forEach(([key], ci) => {
+      const cell = el("div", "cell cells" + zebra + (ci === CONTINENTS.length - 1 ? " lastcol" : ""));
       cell.dataset.cont = key;
       CIVS.filter(c => c.continent === key && c.start < era.end && c.end > era.start)
           .sort((a, b) => a.start - b.start)
@@ -285,9 +416,12 @@ function build() {
             const begins = c.start >= era.start && c.start < era.end;
             const chip = el("button", "chip " + (begins ? "filled" : "carry"));
             chip.textContent = c.name;
+            chip.dataset.id = c.id;
+            chip.dataset.start = c.start;
+            chip.dataset.end = c.end;
             if (begins) chip.style.background = `var(--${key})`;
             else { chip.style.color = `var(--${key})`; chip.style.borderColor = `var(--${key})`; }
-            chip.addEventListener("click", () => openCard(c, key, chip));
+            chip.addEventListener("click", () => openCard(c, chip));
             cell.appendChild(chip);
           });
       matrix.appendChild(cell);
@@ -295,24 +429,75 @@ function build() {
   });
 }
 
-function openCard(c, key, chip) {
+// position on the full -300000..2026 axis, as a percentage
+const AXIS_MIN = -300000, AXIS_MAX = 2026;
+const axisPct = y => (y - AXIS_MIN) / (AXIS_MAX - AXIS_MIN) * 100;
+const findChip = id => matrix.querySelector(`.chip[data-id="${id}"]`);
+
+function buildMeanwhile(c) {
+  const box = card.querySelector(".meanwhile");
+  const others = CIVS
+    .filter(o => o.id !== c.id && o.continent !== c.continent && o.start < c.end && o.end > c.start)
+    .sort((a, b) => Math.abs(a.start - c.start) - Math.abs(b.start - c.start))
+    .slice(0, 6);
+  if (!others.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<h4>Meanwhile elsewhere</h4><div class="mw"></div>`;
+  const mw = box.querySelector(".mw");
+  others.forEach(o => {
+    const b = el("button", "");
+    b.innerHTML = `<i style="background:var(--${o.continent})"></i>${o.name}`;
+    b.addEventListener("click", () => openCard(o, findChip(o.id)));
+    mw.appendChild(b);
+  });
+}
+
+function buildPeriods(c) {
+  const box = card.querySelector(".periods");
+  const ps = PERIODS[c.id];
+  const span = c.end - c.start;
+  if (!ps || span <= 0) { box.innerHTML = ""; return; }
+  box.innerHTML = `<h4>Periods within</h4><div class="track"></div>`;
+  const track = box.querySelector(".track");
+  ps.forEach((p, i) => {
+    const s = el("div", "seg");
+    s.style.left = (p.start - c.start) / span * 100 + "%";
+    s.style.width = (p.end - p.start) / span * 100 + "%";
+    s.style.background = "var(--accent)";
+    s.style.opacity = i % 2 ? ".68" : "1";
+    s.textContent = p.name;
+    s.title = `${p.name} — ${fmtRange(p.start, p.end)}${p.note ? " · " + p.note : ""}`;
+    track.appendChild(s);
+  });
+}
+
+function openCard(c, chip) {
+  const key = c.continent;
   if (activeChip) activeChip.classList.remove("active");
-  activeChip = chip; chip.classList.add("active");
+  activeChip = chip || null;
+  if (chip) { chip.classList.add("active"); chip.scrollIntoView({ block: "nearest", inline: "nearest" }); }
   card.style.setProperty("--accent", `var(--${key})`);
   card.querySelector(".badge i").style.background = `var(--${key})`;
   card.querySelector(".badge-text").textContent = NAMES[key];
   card.querySelector("h3").textContent = c.name;
   card.querySelector(".dates").textContent = fmtRange(c.start, c.end);
   card.querySelector(".span").textContent = spanYears(c);
+  const fill = card.querySelector(".spanbar-fill");
+  fill.style.left = axisPct(c.start) + "%";
+  fill.style.width = Math.max(axisPct(c.end) - axisPct(c.start), 1.5) + "%";
+  fill.style.background = `var(--${key})`;
+  buildPeriods(c);
   card.querySelector("p").textContent = c.blurb;
+  buildMeanwhile(c);
   card.querySelector(".article-link").href = `articles/${c.id}.html`;
   card.querySelector(".wiki-link").href = c.wiki;
   card.classList.add("open");
+  if (location.hash.slice(1) !== c.id) history.replaceState(null, "", "#" + c.id);
 }
 
 function closeCard() {
   card.classList.remove("open");
   if (activeChip) { activeChip.classList.remove("active"); activeChip = null; }
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
 card.querySelector(".close").addEventListener("click", closeCard);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
@@ -345,6 +530,47 @@ function el(tag, cls, html) {
 }
 
 build();
+
+// year probe + name search — both dim non-matching chips
+const filter = { year: null, term: "" };
+function parseYear(s) {
+  s = s.trim();
+  const m = s.match(/^(-?\d[\d,]*)\s*(bce|bc|ce|ad)?$/i);
+  if (!m) return null;
+  let n = +m[1].replace(/,/g, "");
+  if (/^b/i.test(m[2] || "")) n = -Math.abs(n);
+  return n;
+}
+function applyFilter() {
+  const y = filter.year, t = filter.term.trim().toLowerCase();
+  const active = y !== null || t !== "";
+  matrix.querySelectorAll(".chip").forEach(ch => {
+    let lit = true;
+    if (y !== null) lit = lit && +ch.dataset.start <= y && +ch.dataset.end > y;
+    if (t) lit = lit && ch.textContent.toLowerCase().includes(t);
+    ch.classList.toggle("dim", active && !lit);
+  });
+}
+document.getElementById("probe").addEventListener("input", e => {
+  filter.year = e.target.value.trim() === "" ? null : parseYear(e.target.value);
+  applyFilter();
+});
+document.getElementById("search").addEventListener("input", e => {
+  filter.term = e.target.value;
+  applyFilter();
+});
+document.getElementById("surprise").addEventListener("click", () => {
+  const c = CIVS[Math.floor(Math.random() * CIVS.length)];
+  openCard(c, findChip(c.id));
+});
+
+// deep links: #civ-id opens that card
+function openById(id) { const c = CIVS.find(x => x.id === id); if (c) openCard(c, findChip(id)); }
+window.addEventListener("hashchange", () => {
+  const id = location.hash.slice(1);
+  if (id) openById(id); else closeCard();
+});
+if (location.hash.slice(1)) openById(location.hash.slice(1));
 </script>
 </body>
 </html>

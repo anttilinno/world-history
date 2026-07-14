@@ -3,6 +3,22 @@
 Goal: **"The history map you wish you had in school."** A small number of big
 ideas, with enough hooks that a curious child can dive into details.
 
+## Shipped
+
+- ✅ **#1 Zoom levels** — planet view = the grid & globe; civilization view =
+  the sub-period timeline in each card (`PERIODS` in `index.html`); human-story
+  view = the transition bands.
+- ✅ **#2 "Meanwhile"** — every detail card lists contemporaries on other
+  continents.
+- ✅ **#3 Big transitions** — a labelled band between every pair of era rows.
+- ✅ **#4 Why-chains** — each transition band carries its one-line cause.
+- ✅ **#5 Interactive globe** — `globe.html`, `globe.gl` + a time slider.
+- ✅ **All fast wins** — Meanwhile, deep links, year probe, search, Surprise me,
+  span bar.
+
+Every roadmap headline is now shipped in some form. What remains is depth:
+sub-periods for more of the 84 civilizations, and the deeper zoom sketches below.
+
 ## 1. Multiple zoom levels
 
 Like Google Maps:
@@ -10,6 +26,8 @@ Like Google Maps:
 - **Planet view** — humans appear → agriculture → civilizations → industrialization.
 - **Civilization view** — e.g. Egypt: Old Kingdom → Middle Kingdom → Ptolemaic Egypt.
 - **Human story view** — how did farming lead to cities? Why did empires form?
+
+Shipped as a first pass (see above); only 6 civilizations have `PERIODS` so far.
 
 ## 2. Always show "what else was happening"
 

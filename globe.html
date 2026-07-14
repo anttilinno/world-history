@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World History Globe — 300,000 years in place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --africa:#2a78d6; --europe:#1baf7a; --asia:#d99400;
+    --namerica:#e34948; --samerica:#7a5cc8; --oceania:#12988a;
+    --serif:"Newsreader", Georgia, serif;
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { background: #0b0e13; color: #eef1f6; overflow: hidden; font-family: var(--mono); }
+  #globeViz { position: fixed; inset: 0; }
+
+  .panel {
+    position: fixed; top: 18px; left: 18px; z-index: 10; max-width: min(420px, 92vw);
+    background: rgba(12,16,22,0.66); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px 18px;
+  }
+  .panel h1 { font-family: var(--serif); font-weight: 600; font-size: 22px; line-height: 1.1; }
+  .panel .sub { color: #aab3c2; font-size: 12px; margin-top: 6px; line-height: 1.5; }
+  .panel a.back { color: #eef1f6; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.35); }
+
+  .scrubber {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 22px; z-index: 10;
+    width: min(760px, 94vw);
+    background: rgba(12,16,22,0.72); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 14px 18px 16px;
+  }
+  .scrubber .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .scrubber .year { font-family: var(--serif); font-size: 26px; font-weight: 600; }
+  .scrubber .count { font-size: 12px; color: #aab3c2; }
+  .scrubber input[type=range] { width: 100%; margin-top: 10px; accent-color: #eef1f6; cursor: pointer; }
+  .scrubber .controls { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .scrubber button {
+    font: inherit; font-size: 11px; cursor: pointer; color: #cfd6e2;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 999px; padding: 4px 11px;
+  }
+  .scrubber button:hover { border-color: #eef1f6; color: #fff; }
+  .scrubber button[aria-pressed="true"] { background: #eef1f6; color: #0b0e13; border-color: #eef1f6; }
+
+  .legend { position: fixed; right: 18px; top: 18px; z-index: 10;
+    background: rgba(12,16,22,0.6); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    padding: 12px 14px; font-size: 11px; }
+  .legend div { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: #cfd6e2; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+</style>
+</head>
+<body>
+<div id="globeViz"></div>
+
+<div class="panel">
+  <h1>The history globe</h1>
+  <p class="sub">Every civilization where it actually lived. Drag the slider to scrub time and watch them light up and fade. <a class="back" href="index.html">← back to the grid</a></p>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<div class="scrubber">
+  <div class="row">
+    <span class="year" id="year">—</span>
+    <span class="count" id="count"></span>
+  </div>
+  <input type="range" id="slider" min="0" max="0" value="0" step="1" aria-label="Year">
+  <div class="controls">
+    <button id="play" type="button">▶ Play</button>
+    <button data-jump="-300000" type="button">300k BCE</button>
+    <button data-jump="-3000" type="button">3000 BCE</button>
+    <button data-jump="1" type="button">1 CE</button>
+    <button data-jump="1500" type="button">1500</button>
+    <button data-jump="2026" type="button">Today</button>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="vendor/globe.gl.min.js"></script>
+<script>
+// Representative heartland coordinates [lat, lng] per civilization id.
+// Kept here (not in data.js) so data.js's one-line-per-civ format stays intact.
+const COORDS = {
+  "homo-sapiens":[0,37], "out-of-africa":[13,43], "green-sahara":[21,12], "ancient-egypt":[26,31],
+  "kush":[17,34], "carthage":[36.8,10.3], "aksum":[14,38.7], "ghana-empire":[15.7,-8],
+  "mali-empire":[16.8,-3], "songhai":[16.3,-0.05], "atlantic-slave-trade":[6,2], "colonial-africa":[0,22],
+  "modern-africa":[4,22],
+  "neanderthals":[45,4], "ice-age-europe":[45,1.5], "megaliths":[51.2,-1.8], "minoans":[35.2,25.1],
+  "greek-city-states":[38,23.7], "rome":[41.9,12.5], "byzantine":[41.0,28.98], "medieval-europe":[48,8],
+  "vikings":[60,8], "crusades":[31.8,35.2], "renaissance":[43.8,11.25], "colonial-empires":[39,-6],
+  "industrial-revolution":[53.5,-2.2], "world-wars":[50,10], "cold-war-eu":[50.85,4.35],
+  "fertile-crescent":[33,43], "neolithic-china":[35,113], "sumer":[31,46], "indus-valley":[27.3,68.1],
+  "babylon":[32.5,44.4], "shang":[36.1,114.4], "vedic-india":[29,77], "zhou":[34.3,108.9],
+  "achaemenid-persia":[29.9,52.9], "maurya":[25.6,85.1], "han":[34,109], "silk-road":[40,76],
+  "gupta":[25,82], "tang":[34.2,108.95], "song":[34.8,114.3], "mongol-empire":[47.2,102.8],
+  "ottoman":[41.0,29.0], "ming":[39.9,116.4], "mughal":[27.2,78], "tokugawa":[35.7,139.7],
+  "qing":[39.9,116.5], "meiji":[35.7,139.75], "modern-asia":[30,100],
+  "beringia":[65,-168], "mound-builders":[32.6,-91.4], "olmec":[18.1,-94], "maya":[17.2,-89.6],
+  "teotihuacan":[19.7,-98.8], "hopewell":[39.4,-83], "ancestral-pueblo":[36.06,-107.96],
+  "mississippian":[38.66,-90.06], "aztec":[19.4,-99.1], "colonial-namerica":[30,-90], "usa":[39,-98],
+  "first-south-americans":[-41.5,-73.2], "norte-chico":[-10.9,-77.5], "chavin":[-9.6,-77.2],
+  "paracas":[-13.8,-76.3], "moche":[-8.1,-79], "nazca":[-14.8,-74.9], "tiwanaku":[-16.55,-68.7],
+  "wari":[-13.1,-74.2], "inca":[-13.5,-71.98], "spanish-samerica":[-12,-77],
+  "independence-samerica":[-10,-70], "modern-samerica":[-15,-58],
+  "aboriginal-australians":[-25,133], "kuk-agriculture":[-5.8,144.3], "austronesian-expansion":[5,125],
+  "lapita":[-5,150], "polynesian-navigation":[-17,-149], "ancient-hawaii":[20,-157],
+  "maori":[-41,174], "european-oceania":[-30,133], "british-australia":[-33.87,151.2],
+  "modern-oceania":[-28,140],
+};
+const COLORS = { africa:"#2a78d6", europe:"#1baf7a", asia:"#d99400", namerica:"#e34948", samerica:"#7a5cc8", oceania:"#12988a" };
+const NAMES = { africa:"Africa", europe:"Europe", asia:"Asia", namerica:"North America", samerica:"South America", oceania:"Oceania" };
+
+const fmtYear = y => y === 2026 ? "present"
+  : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
+  : y + " CE";
+
+// attach coords; drop any civ missing a coordinate (defensive)
+const PLACED = CIVS.filter(c => COORDS[c.id]).map(c => ({ ...c, lat: COORDS[c.id][0], lng: COORDS[c.id][1] }));
+
+// slider stops = every year at which the alive-set changes (each start and each end), sorted & unique
+const STOPS = [...new Set(PLACED.flatMap(c => [c.start, c.end]))].sort((a, b) => a - b);
+const nearestStop = y => STOPS.reduce((best, s) => Math.abs(s - y) < Math.abs(best - y) ? s : best, STOPS[0]);
+
+const globe = Globe()(document.getElementById("globeViz"))
+  .globeImageUrl("vendor/earth-day.jpg")
+  .backgroundColor("#0b0e13")
+  .atmosphereColor("#6f9bd8")
+  .pointLat("lat").pointLng("lng")
+  .pointColor(d => COLORS[d.continent])
+  .pointAltitude(0.03)
+  .pointRadius(0.55)
+  .pointLabel(d => `<div style="font-family:sans-serif;font-size:12px"><b>${d.name}</b><br>${fmtYear(d.start)} – ${fmtYear(d.end)}</div>`)
+  .onPointClick(d => { window.location.href = `articles/${d.id}.html`; });
+
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.45;
+
+const slider = document.getElementById("slider");
+const yearEl = document.getElementById("year");
+const countEl = document.getElementById("count");
+slider.max = STOPS.length - 1;
+
+function aliveAt(year) { return PLACED.filter(c => c.start <= year && c.end >= year); }
+
+function render(idx) {
+  const year = STOPS[idx];
+  const alive = aliveAt(year);
+  globe.pointsData(alive);
+  yearEl.textContent = fmtYear(year);
+  countEl.textContent = `${alive.length} civilization${alive.length === 1 ? "" : "s"} present`;
+}
+
+slider.addEventListener("input", () => render(+slider.value));
+
+// era jump buttons
+document.querySelectorAll("[data-jump]").forEach(b => {
+  b.addEventListener("click", () => {
+    const idx = STOPS.indexOf(nearestStop(+b.dataset.jump));
+    slider.value = idx; render(idx);
+  });
+});
+
+// play/pause: sweep forward through the stops
+let timer = null;
+const play = document.getElementById("play");
+play.addEventListener("click", () => {
+  if (timer) { clearInterval(timer); timer = null; play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false"); return; }
+  play.textContent = "❚❚ Pause"; play.setAttribute("aria-pressed", "true");
+  timer = setInterval(() => {
+    let v = +slider.value + 1;
+    if (v > +slider.max) v = 0;
+    slider.value = v; render(v);
+  }, 550);
+});
+
+// start at 1 CE — a busy moment
+const startIdx = STOPS.indexOf(nearestStop(1));
+slider.value = startIdx; render(startIdx);
+
+// legend
+const legend = document.getElementById("legend");
+Object.entries(NAMES).forEach(([k, label]) => {
+  const d = document.createElement("div");
+  d.innerHTML = `<i style="background:${COLORS[k]}"></i>${label}`;
+  legend.appendChild(d);
+});
+</script>
+</body>
+</html>

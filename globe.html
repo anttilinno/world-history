@@ -220,17 +220,29 @@ document.querySelectorAll("[data-jump]").forEach(b => {
   });
 });
 
-// play/pause: sweep forward through the stops
-let timer = null;
+// play/pause: visit each civilization's birth in order, spinning the globe to its
+// heartland. Simultaneous births are distinct events, so they're shown one at a
+// time 5s apart. Auto-rotate is paused while playing so the focus stays put.
+const EVENTS = PLACED.slice().sort((a, b) => a.start - b.start || a.end - b.end);
+let timer = null, evIdx = 0;
 const play = document.getElementById("play");
+function showEvent(i) {
+  const ev = EVENTS[i];
+  const idx = STOPS.indexOf(ev.start);
+  slider.value = idx; render(idx);
+  globe.pointOfView({ lat: ev.lat, lng: ev.lng, altitude: 1.8 }, 1500);
+}
 play.addEventListener("click", () => {
-  if (timer) { clearInterval(timer); timer = null; play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false"); return; }
+  if (timer) {
+    clearInterval(timer); timer = null;
+    play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false");
+    globe.controls().autoRotate = true;
+    return;
+  }
   play.textContent = "❚❚ Pause"; play.setAttribute("aria-pressed", "true");
-  timer = setInterval(() => {
-    let v = +slider.value + 1;
-    if (v > +slider.max) v = 0;
-    slider.value = v; render(v);
-  }, 550);
+  globe.controls().autoRotate = false;
+  showEvent(evIdx);
+  timer = setInterval(() => { evIdx = (evIdx + 1) % EVENTS.length; showEvent(evIdx); }, 5000);
 });
 
 // routes toggle

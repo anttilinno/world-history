@@ -7,6 +7,8 @@ through time.
 
 Static site — no build step, no dependencies. Open `index.html` in a browser.
 
+Future ideas live in [ROADMAP.md](ROADMAP.md).
+
 ## Layout
 
 - **Rows = eras** (8): Deep prehistory → First farmers → Bronze Age →

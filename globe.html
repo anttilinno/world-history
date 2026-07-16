@@ -54,7 +54,11 @@
   .flat img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: brightness(.92); }
   .mk { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; cursor: pointer;
     border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 0 6px rgba(0,0,0,0.5);
-    padding: 0; transition: opacity .3s ease, width .2s, height .2s; }
+    padding: 0; transition: opacity .3s ease, width .2s, height .2s, box-shadow .3s ease; }
+  /* Alive at the scrubbed year: lit in its own continent colour, so scrubbing
+     and Play read as things lighting up and fading. */
+  .mk.alive { box-shadow: 0 0 6px rgba(0,0,0,0.5), 0 0 10px 2px var(--glow),
+    0 0 20px 5px color-mix(in srgb, var(--glow) 45%, transparent); }
   .mk:hover, .mk:focus-visible { outline: 2px solid #fff; }
   /* Anchored to its point: JS sets left/top to the POI's screen position and
      this lifts the box just above it. It's a button — click it for details. */
@@ -415,6 +419,7 @@ const marks = PLACED.map(c => {
   b.style.top = (90 - c.lat) / 180 * 100 + "%";
   b.style.width = b.style.height = r + "px";
   b.style.background = COLORS[c.continent];
+  b.style.setProperty("--glow", COLORS[c.continent]);
   const show = () => { clearTimeout(tipHideTimer); showTip(c, b); };
   b.addEventListener("mouseenter", show);
   b.addEventListener("mouseleave", scheduleHideTip);
@@ -429,6 +434,7 @@ const markerById = new Map(marks.map(m => [m.c.id, m.el]));
 function renderFlat(year) {
   for (const { c, el } of marks) {
     const alive = c.start <= year && c.end >= year;
+    el.classList.toggle("alive", alive);
     el.style.opacity = alive ? 0.95 : 0;
     el.style.pointerEvents = alive ? "auto" : "none";
   }

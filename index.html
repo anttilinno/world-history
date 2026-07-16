@@ -55,34 +55,33 @@ h1 {
   letter-spacing: -0.01em; line-height: 1.1;
 }
 .sub { color: var(--ink-2); margin: 8px 0 0; max-width: 74ch; }
+
+/* Global menubar — shared by every surface; wordmark + mono pill links. */
+.wh-nav { border-bottom: 1px solid var(--line); background: var(--card); }
+.wh-nav .in {
+  max-width: 1500px; margin: 0 auto;
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px clamp(14px, 3vw, 40px);
+}
+.wh-nav .brand {
+  font-family: var(--serif); font-weight: 600; font-size: 17px; letter-spacing: -0.01em;
+  color: var(--ink); text-decoration: none; margin-right: auto;
+}
+.wh-nav .links { display: flex; gap: 7px; }
+.wh-nav .links a {
+  font-family: var(--mono); font-size: 12px; text-decoration: none;
+  color: var(--ink-2); background: none; border: 1px solid transparent;
+  padding: 4px 12px; border-radius: 999px;
+}
+.wh-nav .links a:hover { border-color: var(--line); color: var(--ink); }
+.wh-nav .links a[aria-current="page"] { border-color: var(--ink); color: var(--ink); background: var(--paper); }
+
 .tweaks {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   max-width: 1500px; margin: 18px auto 0;
   font-family: var(--mono); font-size: 12px; color: var(--muted);
 }
-.tweaks .grp { display: inline-flex; align-items: center; gap: 8px; }
-.tweaks label { text-transform: uppercase; letter-spacing: 0.08em; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
-.seg button {
-  font: inherit; border: none; background: var(--card); color: var(--ink-2);
-  padding: 5px 11px; cursor: pointer;
-}
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-.legend { display: inline-flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
-.legend button {
-  font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-  color: var(--ink-2); background: none; border: 1px solid transparent;
-  padding: 3px 10px; border-radius: 999px;
-}
-.legend button:hover { border-color: var(--line); }
-.legend button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--card); }
-.legend button.off { opacity: .4; }
-.legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-.key { display: inline-flex; gap: 13px; align-items: center; }
-.key .chip-demo { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; }
-.chip-demo.filled { background: var(--ink); color: var(--paper); }
-.chip-demo.carry { background: transparent; color: var(--ink-2); border: 1px dashed var(--muted); }
+.hint { margin-left: auto; }
 
 .matrix-wrap {
   max-width: 1500px; margin: 20px auto 0;
@@ -104,8 +103,17 @@ h1 {
   font-family: var(--mono); font-size: 12px; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-2);
   border-bottom: 2px solid var(--line);
+  border-top: none; border-left: none;
+  cursor: pointer; transition: opacity .12s ease;
+  background-clip: padding-box;
 }
-.colhead .swatch { display: block; width: 22px; height: 3px; border-radius: 2px; margin: 6px auto 0; }
+.colhead:hover { color: var(--ink); }
+.colhead.off { opacity: .35; }
+.colhead .swatch {
+  display: block; width: 22px; height: 3px; border-radius: 2px; margin: 6px auto 0;
+  transition: width .12s ease;
+}
+.colhead.on .swatch { width: 100%; }
 .cells.hide .chip { display: none; }
 .corner {
   position: sticky; top: 0; left: 0; z-index: 8; background: var(--card);
@@ -180,20 +188,12 @@ h1 {
 #card .links a:hover { background: var(--accent, var(--ink)); color: #fff; }
 
 /* fast-win controls */
-.tweaks .inp {
-  font: inherit; font-family: var(--mono); font-size: 12px;
-  border: 1px solid var(--line); border-radius: 7px; background: var(--card);
-  color: var(--ink); padding: 5px 9px; width: 9ch;
-}
-.tweaks .inp::placeholder { color: var(--muted); }
-.tweaks .inp:focus { outline: none; border-color: var(--ink); }
 .tweaks .btn {
   font: inherit; font-family: var(--mono); font-size: 12px; cursor: pointer;
   border: 1px solid var(--line); border-radius: 7px; background: var(--card);
   color: var(--ink-2); padding: 5px 11px;
 }
 .tweaks .btn:hover { border-color: var(--ink); color: var(--ink); }
-.chip.dim { opacity: .16; }
 
 /* span bar in card */
 #card .spanbar { position: relative; height: 6px; border-radius: 3px; background: var(--line); margin: 0 0 4px; }
@@ -242,35 +242,25 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
 </style>
 </head>
 <body>
+<nav class="wh-nav">
+  <div class="in">
+    <a class="brand" href="index.html">World History Timeline</a>
+    <div class="links">
+      <a href="index.html" aria-current="page">Timeline</a>
+      <a href="globe.html">🌍 Globe</a>
+      <a href="articles/rome.html">Articles</a>
+    </div>
+  </div>
+</nav>
+
 <header class="masthead">
   <h1>World History Timeline</h1>
   <p class="sub">300,000 years across 84 civilizations, laid out as a grid: <strong>eras down</strong>, <strong>continents across</strong>. Read a row to see what every continent was doing at once; read a column to follow one region through time. Nothing overlaps — the eras do the packing.</p>
 </header>
 
 <div class="tweaks">
-  <div class="grp">
-    <label>Palette</label>
-    <span class="seg" id="palette">
-      <button data-v="vivid" aria-pressed="true">Vivid</button>
-      <button data-v="classic" aria-pressed="false">Classic</button>
-      <button data-v="muted" aria-pressed="false">Muted</button>
-    </span>
-  </div>
-  <div class="grp">
-    <label>Year</label>
-    <input id="probe" class="inp" type="text" placeholder="480 BCE" aria-label="Highlight civilizations alive in a given year">
-  </div>
-  <div class="grp">
-    <label>Find</label>
-    <input id="search" class="inp" type="text" placeholder="rome…" aria-label="Highlight civilizations by name">
-  </div>
   <button id="surprise" class="btn" type="button">Surprise me</button>
-  <a class="btn" href="globe.html">🌍 Globe</a>
-  <span class="key">
-    <span class="chip-demo filled">begins here</span>
-    <span class="chip-demo carry">carries over</span>
-  </span>
-  <span class="legend" id="legend"></span>
+  <span class="hint"></span>
 </div>
 
 <div class="matrix-wrap">
@@ -614,10 +604,11 @@ const focus = new Set(); // focused continents; empty = show all
 
 function applyFocus() {
   const any = focus.size > 0;
-  legend.querySelectorAll("button").forEach(b => {
-    const on = focus.has(b.dataset.key);
-    b.setAttribute("aria-pressed", on);
-    b.classList.toggle("off", any && !on);
+  matrix.querySelectorAll(".colhead").forEach(h => {
+    const on = focus.has(h.dataset.key);
+    h.setAttribute("aria-pressed", on);
+    h.classList.toggle("on", on);
+    h.classList.toggle("off", any && !on);
   });
   matrix.querySelectorAll(".cells").forEach(c => {
     c.classList.toggle("hide", any && !focus.has(c.dataset.cont));
@@ -629,8 +620,13 @@ function build() {
   // header row
   matrix.appendChild(el("div", "cell corner", ""));
   CONTINENTS.forEach(([key, label], ci) => {
-    const h = el("div", "cell colhead" + (ci === CONTINENTS.length - 1 ? " lastcol" : ""));
+    const h = el("button", "cell colhead" + (ci === CONTINENTS.length - 1 ? " lastcol" : ""));
+    h.type = "button";
+    h.dataset.key = key;
+    h.setAttribute("aria-pressed", "false");
+    h.title = "Click to focus this continent";
     h.innerHTML = `${label}<span class="swatch" style="background:var(--${key})"></span>`;
+    h.addEventListener("click", () => { focus.has(key) ? focus.delete(key) : focus.add(key); applyFocus(); });
     matrix.appendChild(h);
   });
 
@@ -659,8 +655,6 @@ function build() {
             const chip = el("button", "chip " + (begins ? "filled" : "carry"));
             chip.textContent = c.name;
             chip.dataset.id = c.id;
-            chip.dataset.start = c.start;
-            chip.dataset.end = c.end;
             if (begins) chip.style.background = `var(--${key})`;
             else { chip.style.color = `var(--${key})`; chip.style.borderColor = `var(--${key})`; }
             chip.addEventListener("click", () => openCard(c, chip));
@@ -760,26 +754,6 @@ function closeCard() {
 card.querySelector(".close").addEventListener("click", closeCard);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
 
-// legend
-const legend = document.getElementById("legend");
-CONTINENTS.forEach(([key, label]) => {
-  const b = el("button", "");
-  b.dataset.key = key;
-  b.setAttribute("aria-pressed", "false");
-  b.title = "Click to focus this continent";
-  b.innerHTML = `<i style="background:var(--${key})"></i>${label}`;
-  b.addEventListener("click", () => { focus.has(key) ? focus.delete(key) : focus.add(key); applyFocus(); });
-  legend.appendChild(b);
-});
-
-// palette tweak
-document.getElementById("palette").addEventListener("click", e => {
-  const btn = e.target.closest("button"); if (!btn) return;
-  document.documentElement.dataset.palette = btn.dataset.v;
-  [...e.currentTarget.children].forEach(b => b.setAttribute("aria-pressed", b === btn));
-});
-document.documentElement.dataset.palette = "vivid";
-
 function el(tag, cls, html) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
@@ -789,34 +763,6 @@ function el(tag, cls, html) {
 
 build();
 
-// year probe + name search — both dim non-matching chips
-const filter = { year: null, term: "" };
-function parseYear(s) {
-  s = s.trim();
-  const m = s.match(/^(-?\d[\d,]*)\s*(bce|bc|ce|ad)?$/i);
-  if (!m) return null;
-  let n = +m[1].replace(/,/g, "");
-  if (/^b/i.test(m[2] || "")) n = -Math.abs(n);
-  return n;
-}
-function applyFilter() {
-  const y = filter.year, t = filter.term.trim().toLowerCase();
-  const active = y !== null || t !== "";
-  matrix.querySelectorAll(".chip").forEach(ch => {
-    let lit = true;
-    if (y !== null) lit = lit && +ch.dataset.start <= y && +ch.dataset.end > y;
-    if (t) lit = lit && ch.textContent.toLowerCase().includes(t);
-    ch.classList.toggle("dim", active && !lit);
-  });
-}
-document.getElementById("probe").addEventListener("input", e => {
-  filter.year = e.target.value.trim() === "" ? null : parseYear(e.target.value);
-  applyFilter();
-});
-document.getElementById("search").addEventListener("input", e => {
-  filter.term = e.target.value;
-  applyFilter();
-});
 document.getElementById("surprise").addEventListener("click", () => {
   const c = CIVS[Math.floor(Math.random() * CIVS.length)];
   openCard(c, findChip(c.id));

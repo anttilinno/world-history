@@ -474,9 +474,9 @@ function showEvent(i) {
   // say who we just flew to — the globe's own point label only fires on hover,
   // so without this Play swings somewhere and never names it
   showTip(ev);
-  // an open details panel is about whoever we're visiting, not whoever was
-  // clicked before Play started
-  if (!info.hidden) openInfo(ev);
+  // Play narrates itself: the details come up for each civilization it visits,
+  // no clicking required
+  openInfo(ev);
   // nothing to fly to when the sphere isn't the one on screen
   if (view === "sphere") globe.pointOfView({ lat: ev.lat, lng: ev.lng, altitude: 1.8 }, 1500);
 }

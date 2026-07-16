@@ -47,8 +47,11 @@
 body {
   background: var(--paper); color: var(--ink);
   font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
-  padding: 28px clamp(14px, 3vw, 40px) 96px;
+  padding: 0 0 96px;
 }
+/* The nav is full-bleed; everything below it lives in .page, which carries the
+   padding body used to. */
+.page { padding: 22px clamp(14px, 3vw, 40px) 0; }
 header.masthead { max-width: 1500px; margin: 0 auto 20px; }
 h1 {
   font-family: var(--serif); font-weight: 600; font-size: clamp(26px, 3.4vw, 40px);
@@ -267,6 +270,7 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
   </div>
 </nav>
 
+<div class="page">
 <header class="masthead">
   <h1>World History Timeline</h1>
   <p class="sub">300,000 years across 84 civilizations, laid out as a grid: <strong>eras down</strong>, <strong>continents across</strong>. Read a row to see what every continent was doing at once; read a column to follow one region through time. Nothing overlaps — the eras do the packing.</p>
@@ -282,6 +286,7 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
 </div>
 
 <footer>Click a chip for details. Filled = the civilization begins in that era; dashed ↳ = it carries over from an earlier one.</footer>
+</div><!-- /.page -->
 
 <aside id="card" aria-label="Civilization details">
   <button class="close" aria-label="Close">×</button>

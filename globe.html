@@ -280,6 +280,16 @@ function aliveAt(year) { return PLACED.filter(c => c.start <= year && c.end >= y
 const flatEl = document.getElementById("flat");
 const tip = document.getElementById("tip");
 const mkRadius = c => Math.max(5, Math.min(16, 3 + Math.log10(Math.max(c.end - c.start, 10)) * 2.6));
+// The one name-and-dates callout: flat-map hover, and whatever Play is visiting.
+function showTip(c) {
+  const name = document.createElement("b");
+  name.textContent = c.name;
+  const dates = document.createElement("span");
+  dates.textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
+  tip.replaceChildren(name, dates);
+  tip.hidden = false;
+}
+function hideTip() { tip.hidden = true; }
 const marks = PLACED.map(c => {
   const b = document.createElement("button");
   b.type = "button";
@@ -290,19 +300,11 @@ const marks = PLACED.map(c => {
   b.style.top = (90 - c.lat) / 180 * 100 + "%";
   b.style.width = b.style.height = r + "px";
   b.style.background = COLORS[c.continent];
-  const show = () => {
-    const name = document.createElement("b");
-    name.textContent = c.name;
-    const dates = document.createElement("span");
-    dates.textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
-    tip.replaceChildren(name, dates);
-    tip.hidden = false;
-  };
-  const hide = () => { tip.hidden = true; };
+  const show = () => showTip(c);
   b.addEventListener("mouseenter", show);
-  b.addEventListener("mouseleave", hide);
+  b.addEventListener("mouseleave", hideTip);
   b.addEventListener("focus", show);
-  b.addEventListener("blur", hide);
+  b.addEventListener("blur", hideTip);
   // same as the sphere's points: a marker opens its article
   b.addEventListener("click", () => window.open(`articles/${c.id}.html`, "_blank", "noopener"));
   flatEl.appendChild(b);
@@ -354,6 +356,9 @@ function showEvent(i) {
   const ev = EVENTS[i];
   const idx = STOPS.indexOf(ev.start);
   slider.value = idx; render(idx);
+  // say who we just flew to — the globe's own point label only fires on hover,
+  // so without this Play swings somewhere and never names it
+  showTip(ev);
   // nothing to fly to when the sphere isn't the one on screen
   if (view === "sphere") globe.pointOfView({ lat: ev.lat, lng: ev.lng, altitude: 1.8 }, 1500);
 }
@@ -362,6 +367,7 @@ play.addEventListener("click", () => {
     clearInterval(timer); timer = null;
     play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false");
     globe.controls().autoRotate = view === "sphere";
+    hideTip();
     return;
   }
   play.textContent = "❚❚ Pause"; play.setAttribute("aria-pressed", "true");
@@ -388,7 +394,7 @@ function setView(v) {
   const flat = v === "flat";
   globeEl.hidden = flat;
   stage.hidden = !flat;
-  if (!flat) tip.hidden = true;
+  hideTip();
   vSphere.setAttribute("aria-pressed", !flat);
   vFlat.setAttribute("aria-pressed", flat);
   // don't spin a canvas nobody can see; Play owns autoRotate while it runs

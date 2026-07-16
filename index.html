@@ -157,8 +157,22 @@ h1 {
 }
 .chip.filled { color: #fff; }
 .chip.carry { background: transparent; border-style: dashed; }
+.chip .cont { opacity: .55; margin-right: 3px; }
 .chip:hover, .chip:focus-visible { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(44,41,36,0.22); outline: none; }
-.chip.active { box-shadow: 0 0 0 2px var(--ink); }
+.chip.active { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--pulse-c, var(--ink)); }
+.chip.pulse { position: relative; z-index: 2; animation: chip-pulse 1.1s ease infinite; }
+@keyframes chip-pulse {
+  0%   { box-shadow: 0 0 0 0 var(--pulse-c, var(--ink)); }
+  70%  { box-shadow: 0 0 0 10px rgba(0,0,0,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+}
+
+/* The chip that flies to centre on Surprise me / chip click. Click to dismiss. */
+.fly { position: fixed; z-index: 60; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip.pulse { animation: none; }
+}
 
 /* detail card, bottom-right */
 #card {
@@ -267,7 +281,7 @@ footer { max-width: 1500px; margin: 22px auto 0; color: var(--muted); font-size:
   <div class="matrix" id="matrix"></div>
 </div>
 
-<footer>Click a chip for details. Filled = the civilization begins in that era; dashed = it carries over from an earlier one.</footer>
+<footer>Click a chip for details. Filled = the civilization begins in that era; dashed ↳ = it carries over from an earlier one.</footer>
 
 <aside id="card" aria-label="Civilization details">
   <button class="close" aria-label="Close">×</button>
@@ -653,11 +667,22 @@ function build() {
           .forEach(c => {
             const begins = c.start >= era.start && c.start < era.end;
             const chip = el("button", "chip " + (begins ? "filled" : "carry"));
-            chip.textContent = c.name;
+            chip.type = "button";
+            if (!begins) {
+              const g = el("span", "cont", "↳");
+              g.setAttribute("aria-hidden", "true");
+              chip.appendChild(g);
+            }
+            chip.append(c.name);
             chip.dataset.id = c.id;
+            chip.title = begins ? `${c.name} — begins in this era` : `${c.name} — continues from an earlier era`;
+            chip.style.setProperty("--pulse-c", `var(--${key})`);
             if (begins) chip.style.background = `var(--${key})`;
             else { chip.style.color = `var(--${key})`; chip.style.borderColor = `var(--${key})`; }
-            chip.addEventListener("click", () => openCard(c, chip));
+            chip.addEventListener("click", () => {
+              openCard(c, chip);
+              requestAnimationFrame(() => flyFrom(c, chip.getBoundingClientRect()));
+            });
             cell.appendChild(chip);
           });
       matrix.appendChild(cell);
@@ -746,8 +771,36 @@ function openCard(c, chip) {
   if (location.hash.slice(1) !== c.id) history.replaceState(null, "", "#" + c.id);
 }
 
+// The flown chip: a pulsing clone that travels from the tapped chip to the
+// middle of the screen. Click it to dismiss it and the card together.
+let flyEl = null;
+function clearFly() { if (flyEl) { flyEl.remove(); flyEl = null; } }
+function flyFrom(c, rect) {
+  clearFly();
+  const holder = el("div", "fly");
+  holder.style.left = rect.left + "px";
+  holder.style.top = rect.top + "px";
+  holder.title = "Dismiss";
+  const ghost = el("button", "chip filled pulse");
+  ghost.type = "button";
+  ghost.textContent = c.name;
+  ghost.style.background = `var(--${c.continent})`;
+  ghost.style.setProperty("--pulse-c", `var(--${c.continent})`);
+  holder.appendChild(ghost);
+  holder.addEventListener("click", () => { clearFly(); closeCard(); });
+  document.body.appendChild(holder);
+  flyEl = holder;
+  const dx = window.innerWidth / 2 - (rect.left + rect.width / 2);
+  const dy = window.innerHeight / 2 - (rect.top + rect.height / 2);
+  holder.animate([
+    { transform: "translate(0,0) scale(1)", opacity: 0.9 },
+    { transform: `translate(${dx}px, ${dy}px) scale(3)`, opacity: 1 },
+  ], { duration: 800, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" });
+}
+
 function closeCard() {
   card.classList.remove("open");
+  clearFly();
   if (activeChip) { activeChip.classList.remove("active"); activeChip = null; }
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
@@ -765,7 +818,20 @@ build();
 
 document.getElementById("surprise").addEventListener("click", () => {
   const c = CIVS[Math.floor(Math.random() * CIVS.length)];
-  openCard(c, findChip(c.id));
+  focus.clear(); applyFocus();          // a focused column could be hiding it
+  clearFly();
+  const chip = findChip(c.id);
+  openCard(c, chip);
+  if (!chip) { flyFrom(c, { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 }); return; }
+  // Centre it in the scroll box, then fly from where it ends up.
+  const wrap = document.querySelector(".matrix-wrap");
+  const wr = wrap.getBoundingClientRect(), er = chip.getBoundingClientRect();
+  wrap.scrollTo({
+    top: wrap.scrollTop + (er.top + er.height / 2) - (wr.top + wr.height / 2),
+    left: wrap.scrollLeft + (er.left + er.width / 2) - (wr.left + wr.width / 2),
+    behavior: "smooth",
+  });
+  requestAnimationFrame(() => flyFrom(c, chip.getBoundingClientRect()));
 });
 
 // deep links: #civ-id opens that card

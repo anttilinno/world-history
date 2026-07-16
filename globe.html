@@ -56,9 +56,12 @@
     border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 0 6px rgba(0,0,0,0.5);
     padding: 0; transition: opacity .3s ease, width .2s, height .2s; }
   .mk:hover, .mk:focus-visible { outline: 2px solid #fff; }
-  #tip { position: fixed; left: 50%; top: 14%; transform: translateX(-50%); z-index: 20;
+  /* Anchored to its point: JS sets left/top to the POI's screen position and
+     this lifts the box just above it. */
+  #tip { position: fixed; left: 0; top: 0; transform: translate(-50%, -100%); z-index: 20;
     text-align: center; pointer-events: none; background: rgba(12,16,22,0.82);
-    border: 1px solid var(--night-line-strong); border-radius: 10px; padding: 10px 16px; }
+    border: 1px solid var(--night-line-strong); border-radius: 10px; padding: 8px 14px;
+    white-space: nowrap; }
   #tip[hidden] { display: none; }
   #tip b { font-family: var(--serif); font-size: 20px; font-weight: 600; }
   #tip span { display: block; color: var(--night-muted); font-size: 12px; margin-top: 4px; }
@@ -281,15 +284,58 @@ const flatEl = document.getElementById("flat");
 const tip = document.getElementById("tip");
 const mkRadius = c => Math.max(5, Math.min(16, 3 + Math.log10(Math.max(c.end - c.start, 10)) * 2.6));
 // The one name-and-dates callout: flat-map hover, and whatever Play is visiting.
-function showTip(c) {
+// It rides its subject rather than floating in a corner, so on the sphere it's
+// anchored to a lat/lng and re-projected every frame, and on the flat map to the
+// marker element itself.
+let tipAnchor = null;   // { lat, lng } on the sphere, { el } on the flat map
+let tipRaf = null;
+function placeTip() {
+  if (!tipAnchor) return;
+  let x, y, facing = true;
+  if (tipAnchor.el) {
+    const r = tipAnchor.el.getBoundingClientRect();
+    x = r.left + r.width / 2;
+    y = r.top - 6;
+  } else {
+    const s = globe.getScreenCoords(tipAnchor.lat, tipAnchor.lng, 0.06);
+    const p = globe.getCoords(tipAnchor.lat, tipAnchor.lng, 0.06);
+    const c = globe.camera().position;
+    // the surface normal is the point itself (globe is centred on the origin);
+    // if it doesn't lean toward the camera the POI is round the back
+    facing = p.x * (c.x - p.x) + p.y * (c.y - p.y) + p.z * (c.z - p.z) > 0;
+    x = s.x;
+    y = s.y - 10;
+  }
+  const half = tip.offsetWidth / 2;
+  tip.style.left = Math.max(half + 4, Math.min(window.innerWidth - half - 4, x)) + "px";
+  tip.style.top = Math.max(tip.offsetHeight + 4, y) + "px";
+  tip.style.visibility = facing ? "visible" : "hidden";
+}
+function showTip(c, el) {
   const name = document.createElement("b");
   name.textContent = c.name;
   const dates = document.createElement("span");
   dates.textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
   tip.replaceChildren(name, dates);
+  tipAnchor = el ? { el } : { lat: c.lat, lng: c.lng };
   tip.hidden = false;
+  placeTip();
+  if (tipRaf) cancelAnimationFrame(tipRaf);
+  if (!el) {
+    // Play flies the camera for 1.5s and the globe can spin — keep up with it
+    const follow = () => {
+      if (!tipAnchor || tipAnchor.el || tip.hidden) { tipRaf = null; return; }
+      placeTip();
+      tipRaf = requestAnimationFrame(follow);
+    };
+    tipRaf = requestAnimationFrame(follow);
+  }
 }
-function hideTip() { tip.hidden = true; }
+function hideTip() {
+  tip.hidden = true;
+  tipAnchor = null;
+  if (tipRaf) { cancelAnimationFrame(tipRaf); tipRaf = null; }
+}
 const marks = PLACED.map(c => {
   const b = document.createElement("button");
   b.type = "button";
@@ -300,7 +346,7 @@ const marks = PLACED.map(c => {
   b.style.top = (90 - c.lat) / 180 * 100 + "%";
   b.style.width = b.style.height = r + "px";
   b.style.background = COLORS[c.continent];
-  const show = () => showTip(c);
+  const show = () => showTip(c, b);
   b.addEventListener("mouseenter", show);
   b.addEventListener("mouseleave", hideTip);
   b.addEventListener("focus", show);

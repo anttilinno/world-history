@@ -57,14 +57,39 @@
     padding: 0; transition: opacity .3s ease, width .2s, height .2s; }
   .mk:hover, .mk:focus-visible { outline: 2px solid #fff; }
   /* Anchored to its point: JS sets left/top to the POI's screen position and
-     this lifts the box just above it. */
+     this lifts the box just above it. It's a button — click it for details. */
   #tip { position: fixed; left: 0; top: 0; transform: translate(-50%, -100%); z-index: 20;
-    text-align: center; pointer-events: none; background: rgba(12,16,22,0.82);
+    text-align: center; cursor: pointer; background: rgba(12,16,22,0.82); color: var(--night-text);
     border: 1px solid var(--night-line-strong); border-radius: 10px; padding: 8px 14px;
-    white-space: nowrap; }
+    white-space: nowrap; font: inherit; }
+  #tip:hover, #tip:focus-visible { border-color: var(--night-text); outline: none; }
   #tip[hidden] { display: none; }
-  #tip b { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+  #tip b { font-family: var(--serif); font-size: 20px; font-weight: 600; display: block; }
   #tip span { display: block; color: var(--night-muted); font-size: 12px; margin-top: 4px; }
+  #tip .more { font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--night-muted); margin-top: 6px; opacity: .8; }
+
+  /* Details for the civilization whose label you clicked. */
+  #info { position: fixed; right: 18px; bottom: 150px; z-index: 25; width: min(340px, 92vw);
+    background: var(--night-glass-strong, rgba(12,16,22,0.72)); backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); border: 1px solid var(--night-line-strong);
+    border-radius: 14px; padding: 18px 20px; }
+  #info[hidden] { display: none; }
+  #info .close { position: absolute; top: 10px; right: 12px; background: none; border: none;
+    color: var(--night-muted); font-size: 20px; line-height: 1; cursor: pointer; }
+  #info .close:hover { color: var(--night-text); }
+  #info .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--night-muted); }
+  #info .badge i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+  #info h3 { font-family: var(--serif); font-size: 22px; font-weight: 600; line-height: 1.15;
+    margin-top: 6px; }
+  #info .dates { font-size: 11.5px; color: var(--night-text-2); margin-top: 5px; }
+  #info .blurb { font-family: var(--serif); font-size: 15px; line-height: 1.55;
+    color: var(--night-text-2); margin-top: 10px; }
+  #info .links { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  #info .links a { font-size: 11px; text-decoration: none; color: var(--night-text-2);
+    border: 1px solid var(--night-btn-line); border-radius: 999px; padding: 5px 11px; }
+  #info .links a:hover { border-color: var(--night-text); color: var(--night-text); }
 
   /* Sphere / Flat map switch, stacked above the legend. */
   .tr { position: fixed; top: 62px; right: 18px; z-index: 10; display: grid; gap: 10px; justify-items: end; }
@@ -138,7 +163,19 @@
   </div>
 </div>
 
-<div id="tip" hidden></div>
+<button id="tip" type="button" title="Click for details" hidden></button>
+
+<aside id="info" aria-label="Civilization details" hidden>
+  <button class="close" type="button" aria-label="Close">×</button>
+  <span class="badge"><i></i><span class="badge-text"></span></span>
+  <h3></h3>
+  <div class="dates"></div>
+  <p class="blurb"></p>
+  <div class="links">
+    <a class="article" target="_blank" rel="noopener">Read the article →</a>
+    <a class="wiki" target="_blank" rel="noopener">Wikipedia ↗</a>
+  </div>
+</aside>
 
 <div class="panel">
   <h1>The history globe</h1>
@@ -289,6 +326,8 @@ const mkRadius = c => Math.max(5, Math.min(16, 3 + Math.log10(Math.max(c.end - c
 // marker element itself.
 let tipAnchor = null;   // { lat, lng } on the sphere, { el } on the flat map
 let tipRaf = null;
+let tipCiv = null;      // whose label is showing — the details the tip opens
+let tipHideTimer = null;
 function placeTip() {
   if (!tipAnchor) return;
   let x, y, facing = true;
@@ -316,7 +355,11 @@ function showTip(c, el) {
   name.textContent = c.name;
   const dates = document.createElement("span");
   dates.textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
-  tip.replaceChildren(name, dates);
+  const more = document.createElement("span");
+  more.className = "more";
+  more.textContent = "Click for details";
+  tip.replaceChildren(name, dates, more);
+  tipCiv = c;
   tipAnchor = el ? { el } : { lat: c.lat, lng: c.lng };
   tip.hidden = false;
   placeTip();
@@ -332,10 +375,36 @@ function showTip(c, el) {
   }
 }
 function hideTip() {
+  clearTimeout(tipHideTimer);
   tip.hidden = true;
   tipAnchor = null;
   if (tipRaf) { cancelAnimationFrame(tipRaf); tipRaf = null; }
 }
+// Reaching from a marker to its label crosses a gap, and leaving the marker
+// fires mouseleave — so don't yank the label away mid-reach.
+const scheduleHideTip = () => { clearTimeout(tipHideTimer); tipHideTimer = setTimeout(hideTip, 160); };
+tip.addEventListener("mouseenter", () => clearTimeout(tipHideTimer));
+tip.addEventListener("mouseleave", scheduleHideTip);
+tip.addEventListener("click", () => { if (tipCiv) openInfo(tipCiv); });
+
+// Details panel — opened by clicking a label. Clicking a point or a marker
+// still goes straight to the article.
+const info = document.getElementById("info");
+function openInfo(c) {
+  info.querySelector(".badge i").style.background = COLORS[c.continent];
+  info.querySelector(".badge-text").textContent = NAMES[c.continent];
+  info.querySelector("h3").textContent = c.name;
+  info.querySelector(".dates").textContent =
+    `${fmtYear(c.start)} – ${fmtYear(c.end)} · ${(c.end - c.start).toLocaleString("en")} years`;
+  info.querySelector(".blurb").textContent = c.blurb;
+  info.querySelector(".article").href = `articles/${c.id}.html`;
+  const wiki = info.querySelector(".wiki");
+  if (c.wiki) { wiki.href = c.wiki; wiki.hidden = false; } else { wiki.hidden = true; }
+  info.hidden = false;
+}
+function closeInfo() { info.hidden = true; }
+info.querySelector(".close").addEventListener("click", closeInfo);
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closeInfo(); hideTip(); } });
 const marks = PLACED.map(c => {
   const b = document.createElement("button");
   b.type = "button";
@@ -346,11 +415,11 @@ const marks = PLACED.map(c => {
   b.style.top = (90 - c.lat) / 180 * 100 + "%";
   b.style.width = b.style.height = r + "px";
   b.style.background = COLORS[c.continent];
-  const show = () => showTip(c, b);
+  const show = () => { clearTimeout(tipHideTimer); showTip(c, b); };
   b.addEventListener("mouseenter", show);
-  b.addEventListener("mouseleave", hideTip);
+  b.addEventListener("mouseleave", scheduleHideTip);
   b.addEventListener("focus", show);
-  b.addEventListener("blur", hideTip);
+  b.addEventListener("blur", scheduleHideTip);
   // same as the sphere's points: a marker opens its article
   b.addEventListener("click", () => window.open(`articles/${c.id}.html`, "_blank", "noopener"));
   flatEl.appendChild(b);

@@ -13,14 +13,67 @@
     --namerica:#e34948; --samerica:#7a5cc8; --oceania:#12988a;
     --serif:"Newsreader", Georgia, serif;
     --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+    /* Night-sky surface. Values match the design system's night tokens. */
+    --night:#0b0e13;
+    --night-text:#eef1f6;
+    --night-text-2:#cfd6e2;
+    --night-muted:#aab3c2;
+    --night-glass:rgba(12,16,22,0.66);
+    --night-line:rgba(255,255,255,0.12);
+    --night-line-strong:rgba(255,255,255,0.18);
+    --night-btn-line:rgba(255,255,255,0.14);
   }
   * { box-sizing: border-box; margin: 0; }
   html, body { height: 100%; }
   body { background: #0b0e13; color: #eef1f6; overflow: hidden; font-family: var(--mono); }
   #globeViz { position: fixed; inset: 0; }
+  #globeViz[hidden] { display: none; }
+
+  /* Global menubar, night variant. */
+  .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 15; }
+  .wh-nav { background: var(--night-glass); backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--night-line); }
+  .wh-nav .in { max-width: 1500px; margin: 0 auto; display: flex; align-items: center;
+    gap: 18px; padding: 10px clamp(14px, 3vw, 40px); }
+  .wh-nav .brand { font-family: var(--serif); font-weight: 600; font-size: 17px;
+    letter-spacing: -0.01em; color: var(--night-text); text-decoration: none; margin-right: auto; }
+  .wh-nav .links { display: flex; gap: 7px; }
+  .wh-nav .links a { font-family: var(--mono); font-size: 12px; text-decoration: none;
+    color: var(--night-muted); border: 1px solid transparent; padding: 4px 12px; border-radius: 999px; }
+  .wh-nav .links a:hover { border-color: var(--night-btn-line); color: var(--night-text); }
+  .wh-nav .links a[aria-current="page"] { border-color: var(--night-text);
+    color: var(--night); background: var(--night-text); }
+
+  /* Flat map view — the same 84 civilizations on the equirectangular texture. */
+  .stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    padding: 130px 24px 190px; }
+  .stage[hidden] { display: none; }
+  .flat { position: relative; width: 100%; max-width: 1080px; aspect-ratio: 2/1;
+    border-radius: 12px; overflow: hidden; border: 1px solid var(--night-line-strong);
+    box-shadow: 0 0 70px rgba(111,155,216,0.22); }
+  .flat img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; filter: brightness(.92); }
+  .mk { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    padding: 0; transition: opacity .3s ease, width .2s, height .2s; }
+  .mk:hover, .mk:focus-visible { outline: 2px solid #fff; }
+  #tip { position: fixed; left: 50%; top: 14%; transform: translateX(-50%); z-index: 20;
+    text-align: center; pointer-events: none; background: rgba(12,16,22,0.82);
+    border: 1px solid var(--night-line-strong); border-radius: 10px; padding: 10px 16px; }
+  #tip[hidden] { display: none; }
+  #tip b { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+  #tip span { display: block; color: var(--night-muted); font-size: 12px; margin-top: 4px; }
+
+  /* Sphere / Flat map switch, stacked above the legend. */
+  .tr { position: fixed; top: 62px; right: 18px; z-index: 10; display: grid; gap: 10px; justify-items: end; }
+  .viewseg { display: inline-flex; border: 1px solid var(--night-btn-line); border-radius: 999px;
+    overflow: hidden; background: var(--night-glass); }
+  .viewseg button { font-family: var(--mono); font-size: 11px; cursor: pointer;
+    color: var(--night-text-2); background: transparent; border: none; padding: 6px 14px; }
+  .viewseg button + button { border-left: 1px solid var(--night-btn-line); }
+  .viewseg button[aria-pressed="true"] { background: var(--night-text); color: var(--night); }
 
   .panel {
-    position: fixed; top: 18px; left: 18px; z-index: 10; max-width: min(420px, 92vw);
+    position: fixed; top: 62px; left: 18px; z-index: 10; max-width: min(420px, 92vw);
     background: rgba(12,16,22,0.66); backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px 18px;
   }
@@ -54,22 +107,48 @@
   .scrubber button:hover { border-color: #eef1f6; color: #fff; }
   .scrubber button[aria-pressed="true"] { background: #eef1f6; color: #0b0e13; border-color: #eef1f6; }
 
-  .legend { position: fixed; right: 18px; top: 18px; z-index: 10;
-    background: rgba(12,16,22,0.6); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
-    padding: 12px 14px; font-size: 11px; }
+  .legend { background: rgba(12,16,22,0.6); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 12px 14px; font-size: 11px; }
   .legend div { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: #cfd6e2; }
   .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 </style>
 </head>
 <body>
+<div class="topnav">
+  <nav class="wh-nav night">
+    <div class="in">
+      <a class="brand" href="index.html">World History Timeline</a>
+      <div class="links">
+        <a href="index.html">Timeline</a>
+        <a href="globe.html" aria-current="page">🌍 Globe</a>
+        <a href="articles/rome.html">Articles</a>
+      </div>
+    </div>
+  </nav>
+</div>
+
 <div id="globeViz"></div>
+
+<div class="stage" id="stage" hidden>
+  <div class="flat" id="flat">
+    <img src="vendor/earth-day.jpg" alt="World map">
+  </div>
+</div>
+
+<div id="tip" hidden></div>
 
 <div class="panel">
   <h1>The history globe</h1>
   <p class="sub">Every civilization where it actually lived. Drag the slider to scrub time and watch them light up and fade. <a class="back" href="index.html">← back to the grid</a></p>
 </div>
 
-<div class="legend" id="legend"></div>
+<div class="tr">
+  <span class="viewseg">
+    <button id="vSphere" type="button" aria-pressed="true">Sphere</button>
+    <button id="vFlat" type="button" aria-pressed="false">Flat map</button>
+  </span>
+  <div class="legend" id="legend"></div>
+</div>
 
 <div class="scrubber">
   <div class="row">
@@ -195,12 +274,57 @@ document.getElementById("stops").innerHTML = STOPS.map((_, i) => `<option value=
 
 function aliveAt(year) { return PLACED.filter(c => c.start <= year && c.end >= year); }
 
+// Flat map: the same PLACED civilizations on the equirectangular texture, so
+// lat/lng map straight onto percentage offsets. Radius is log-scaled by
+// longevity, the same idea as the sphere's point sizing.
+const flatEl = document.getElementById("flat");
+const tip = document.getElementById("tip");
+const mkRadius = c => Math.max(5, Math.min(16, 3 + Math.log10(Math.max(c.end - c.start, 10)) * 2.6));
+const marks = PLACED.map(c => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "mk";
+  b.title = c.name;
+  const r = mkRadius(c);
+  b.style.left = (c.lng + 180) / 360 * 100 + "%";
+  b.style.top = (90 - c.lat) / 180 * 100 + "%";
+  b.style.width = b.style.height = r + "px";
+  b.style.background = COLORS[c.continent];
+  const show = () => {
+    const name = document.createElement("b");
+    name.textContent = c.name;
+    const dates = document.createElement("span");
+    dates.textContent = `${fmtYear(c.start)} – ${fmtYear(c.end)}`;
+    tip.replaceChildren(name, dates);
+    tip.hidden = false;
+  };
+  const hide = () => { tip.hidden = true; };
+  b.addEventListener("mouseenter", show);
+  b.addEventListener("mouseleave", hide);
+  b.addEventListener("focus", show);
+  b.addEventListener("blur", hide);
+  // same as the sphere's points: a marker opens its article
+  b.addEventListener("click", () => window.open(`articles/${c.id}.html`, "_blank", "noopener"));
+  flatEl.appendChild(b);
+  return { c, el: b };
+});
+function renderFlat(year) {
+  for (const { c, el } of marks) {
+    const alive = c.start <= year && c.end >= year;
+    el.style.opacity = alive ? 0.95 : 0;
+    el.style.pointerEvents = alive ? "auto" : "none";
+  }
+}
+
 let showArcs = true;
+let view = "sphere";
 function render(idx) {
   const year = STOPS[idx];
   const alive = aliveAt(year);
   globe.pointsData(alive);
-  globe.arcsData(showArcs ? ROUTES.filter(a => a.startYear <= year && a.endYear >= year) : []);
+  // arcs are a sphere-only rendering
+  globe.arcsData(showArcs && view === "sphere" ? ROUTES.filter(a => a.startYear <= year && a.endYear >= year) : []);
+  renderFlat(year);
   yearEl.textContent = fmtYear(year);
   countEl.textContent = `${alive.length} civilization${alive.length === 1 ? "" : "s"} present`;
 }
@@ -230,13 +354,14 @@ function showEvent(i) {
   const ev = EVENTS[i];
   const idx = STOPS.indexOf(ev.start);
   slider.value = idx; render(idx);
-  globe.pointOfView({ lat: ev.lat, lng: ev.lng, altitude: 1.8 }, 1500);
+  // nothing to fly to when the sphere isn't the one on screen
+  if (view === "sphere") globe.pointOfView({ lat: ev.lat, lng: ev.lng, altitude: 1.8 }, 1500);
 }
 play.addEventListener("click", () => {
   if (timer) {
     clearInterval(timer); timer = null;
     play.textContent = "▶ Play"; play.setAttribute("aria-pressed", "false");
-    globe.controls().autoRotate = true;
+    globe.controls().autoRotate = view === "sphere";
     return;
   }
   play.textContent = "❚❚ Pause"; play.setAttribute("aria-pressed", "true");
@@ -252,6 +377,30 @@ arcsBtn.addEventListener("click", () => {
   arcsBtn.setAttribute("aria-pressed", showArcs);
   render(+slider.value);
 });
+
+// Sphere / Flat map. Sphere is the live 3D globe; flat is the static map.
+const globeEl = document.getElementById("globeViz");
+const stage = document.getElementById("stage");
+const vSphere = document.getElementById("vSphere");
+const vFlat = document.getElementById("vFlat");
+function setView(v) {
+  view = v;
+  const flat = v === "flat";
+  globeEl.hidden = flat;
+  stage.hidden = !flat;
+  if (!flat) tip.hidden = true;
+  vSphere.setAttribute("aria-pressed", !flat);
+  vFlat.setAttribute("aria-pressed", flat);
+  // don't spin a canvas nobody can see; Play owns autoRotate while it runs
+  globe.controls().autoRotate = !flat && !timer;
+  // routes only exist on the sphere, so don't leave a dead toggle behind
+  arcsBtn.disabled = flat;
+  arcsBtn.title = flat ? "Routes are drawn on the sphere view" : "";
+  arcsBtn.style.opacity = flat ? 0.4 : "";
+  render(+slider.value);
+}
+vSphere.addEventListener("click", () => setView("sphere"));
+vFlat.addEventListener("click", () => setView("flat"));
 
 // start at 1 CE — a busy moment
 const startIdx = STOPS.indexOf(nearestStop(1));

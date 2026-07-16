@@ -60,6 +60,18 @@
   .mk.alive { box-shadow: 0 0 6px rgba(0,0,0,0.5), 0 0 10px 2px var(--glow),
     0 0 20px 5px color-mix(in srgb, var(--glow) 45%, transparent); }
   .mk:hover, .mk:focus-visible { outline: 2px solid #fff; }
+  /* The one wearing the label — Play's current subject, or whatever you're
+     hovering. Has to beat 80-odd other lit markers, so: white ring, a much
+     wider bloom, and a slow beat. */
+  .mk.focus { z-index: 6; outline: 2px solid #fff; outline-offset: 1px;
+    box-shadow: 0 0 6px rgba(0,0,0,0.5), 0 0 16px 5px var(--glow),
+      0 0 44px 14px color-mix(in srgb, var(--glow) 65%, transparent);
+    animation: mk-beat 1.6s ease-in-out infinite; }
+  @keyframes mk-beat {
+    0%, 100% { transform: translate(-50%,-50%) scale(1); }
+    50%      { transform: translate(-50%,-50%) scale(1.45); }
+  }
+  @media (prefers-reduced-motion: reduce) { .mk.focus { animation: none; } }
   /* Anchored to its point: JS sets left/top to the POI's screen position and
      this lifts the box just above it. It's a button — click it for details. */
   #tip { position: fixed; left: 0; top: 0; transform: translate(-50%, -100%); z-index: 20;
@@ -332,6 +344,12 @@ let tipAnchor = null;   // { lat, lng } on the sphere, { el } on the flat map
 let tipRaf = null;
 let tipCiv = null;      // whose label is showing — the details the tip opens
 let tipHideTimer = null;
+let tipMarker = null;   // the flat marker wearing the label, singled out from the lit crowd
+function setFocusMarker(el) {
+  if (tipMarker && tipMarker !== el) tipMarker.classList.remove("focus");
+  tipMarker = el || null;
+  if (tipMarker) tipMarker.classList.add("focus");
+}
 function placeTip() {
   if (!tipAnchor) return;
   let x, y, facing = true;
@@ -365,6 +383,7 @@ function showTip(c, el) {
   tip.replaceChildren(name, dates, more);
   tipCiv = c;
   tipAnchor = el ? { el } : { lat: c.lat, lng: c.lng };
+  setFocusMarker(el);
   tip.hidden = false;
   placeTip();
   if (tipRaf) cancelAnimationFrame(tipRaf);
@@ -382,6 +401,7 @@ function hideTip() {
   clearTimeout(tipHideTimer);
   tip.hidden = true;
   tipAnchor = null;
+  setFocusMarker(null);
   if (tipRaf) { cancelAnimationFrame(tipRaf); tipRaf = null; }
 }
 // Reaching from a marker to its label crosses a gap, and leaving the marker

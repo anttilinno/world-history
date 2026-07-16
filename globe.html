@@ -425,6 +425,7 @@ const marks = PLACED.map(c => {
   flatEl.appendChild(b);
   return { c, el: b };
 });
+const markerById = new Map(marks.map(m => [m.c.id, m.el]));
 function renderFlat(year) {
   for (const { c, el } of marks) {
     const alive = c.start <= year && c.end >= year;
@@ -472,8 +473,9 @@ function showEvent(i) {
   const idx = STOPS.indexOf(ev.start);
   slider.value = idx; render(idx);
   // say who we just flew to — the globe's own point label only fires on hover,
-  // so without this Play swings somewhere and never names it
-  showTip(ev);
+  // so without this Play swings somewhere and never names it. On the flat map
+  // the subject is the marker, not a point on a globe that isn't on screen.
+  showTip(ev, view === "flat" ? markerById.get(ev.id) : undefined);
   // Play narrates itself: the details come up for each civilization it visits,
   // no clicking required
   openInfo(ev);

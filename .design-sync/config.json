@@ -1,0 +1,8 @@
+{
+  "projectId": "08756f03-1c21-4eb3-97bd-bbdd82b07688",
+  "shape": "package",
+  "offScript": true,
+  "tokensOnly": true,
+  "outDir": "ds-bundle",
+  "readmeHeader": ".design-sync/conventions.md"
+}

@@ -309,7 +309,7 @@ const globe = Globe()(document.getElementById("globeViz"))
   .pointAltitude(d => 0.015 + 0.06 * Math.min(1, Math.log10(Math.max(d.end - d.start, 10)) / 5))
   .pointRadius(d => 0.35 + 0.45 * Math.min(1, Math.log10(Math.max(d.end - d.start, 10)) / 5))
   .pointLabel(d => `<div style="font-family:sans-serif;font-size:12px"><b>${d.name}</b><br>${fmtYear(d.start)} – ${fmtYear(d.end)}</div>`)
-  .onPointClick(d => { window.open(`articles/${d.id}.html`, "_blank", "noopener"); })
+  .onPointClick(d => { showTip(d); openInfo(d); })
   .arcStartLat(d => d.from[0]).arcStartLng(d => d.from[1])
   .arcEndLat(d => d.to[0]).arcEndLng(d => d.to[1])
   .arcColor(d => [ARC_COLORS[d.type] || "#ffffff", ARC_COLORS[d.type] || "#ffffff"])
@@ -411,8 +411,8 @@ tip.addEventListener("mouseenter", () => clearTimeout(tipHideTimer));
 tip.addEventListener("mouseleave", scheduleHideTip);
 tip.addEventListener("click", () => { if (tipCiv) openInfo(tipCiv); });
 
-// Details panel — opened by clicking a label. Clicking a point or a marker
-// still goes straight to the article.
+// Details panel — a click on a point, a flat marker, or a label names the
+// civilization and opens its details here; the article is one click further in.
 const info = document.getElementById("info");
 function openInfo(c) {
   info.querySelector(".badge i").style.background = COLORS[c.continent];
@@ -421,7 +421,7 @@ function openInfo(c) {
   info.querySelector(".dates").textContent =
     `${fmtYear(c.start)} – ${fmtYear(c.end)} · ${(c.end - c.start).toLocaleString("en")} years`;
   info.querySelector(".blurb").textContent = c.blurb;
-  info.querySelector(".article").href = `articles/${c.id}.html`;
+  info.querySelector(".article").href = `articles/${c.id}.html?from=globe`;
   const wiki = info.querySelector(".wiki");
   if (c.wiki) { wiki.href = c.wiki; wiki.hidden = false; } else { wiki.hidden = true; }
   info.hidden = false;
@@ -445,8 +445,8 @@ const marks = PLACED.map(c => {
   b.addEventListener("mouseleave", scheduleHideTip);
   b.addEventListener("focus", show);
   b.addEventListener("blur", scheduleHideTip);
-  // same as the sphere's points: a marker opens its article
-  b.addEventListener("click", () => window.open(`articles/${c.id}.html`, "_blank", "noopener"));
+  // same as the sphere's points: a click names it and opens the details panel
+  b.addEventListener("click", () => { showTip(c, b); openInfo(c); });
   flatEl.appendChild(b);
   return { c, el: b };
 });

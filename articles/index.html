@@ -67,12 +67,12 @@ body { background: var(--paper); }
 <div class="page">
   <header class="masthead">
     <h1>Articles</h1>
-    <p>Every one of the 84 civilizations, each with its own page. Grouped by continent, in the order they begin.</p>
+    <p>Every one of the 84 civilizations, each with its own page. Grouped by continent, in the order they begin — followed by the great migrations and trade routes that tie them together.</p>
   </header>
   <div id="groups"></div>
 </div>
 
-<script src="../data.js"></script>
+<script src="../data.js?v=2"></script>
 <script>
 const CONTINENTS = [["africa","Africa"],["europe","Europe"],["asia","Asia"],["namerica","North America"],["samerica","South America"],["oceania","Oceania"]];
 const fmtYear = y => y === 2026 ? "present"
@@ -113,6 +113,47 @@ for (const [key, label] of CONTINENTS) {
   section.appendChild(ul);
   groups.appendChild(section);
 }
+
+// Migrations & trade routes — the globe's arcs, grouped by label (one entry per
+// route) and ordered by when they begin. Data shared with the globe via data.js.
+const routes = new Map();
+for (const r of ROUTES) {
+  const m = routes.get(r.label) || { label: r.label, start: r.startYear, end: r.endYear };
+  m.start = Math.min(m.start, r.startYear);
+  m.end = Math.max(m.end, r.endYear);
+  routes.set(r.label, m);
+}
+const rsec = document.createElement("section");
+rsec.className = "group";
+rsec.style.setProperty("--accent", "#c8991a"); // warm amber, the migration arc colour
+const rh2 = document.createElement("h2");
+rh2.innerHTML = `Migrations &amp; trade routes<span class="n">${routes.size}</span>`;
+rsec.appendChild(rh2);
+const rul = document.createElement("ul");
+rul.className = "list";
+for (const m of [...routes.values()].sort((a, b) => a.start - b.start)) {
+  const meta = ROUTE_META[m.label] || {};
+  const li = document.createElement("li");
+  const a = document.createElement("a");
+  a.href = `${meta.article}.html`;
+  const row = document.createElement("div");
+  row.className = "row";
+  const name = document.createElement("span");
+  name.className = "name";
+  name.textContent = m.label;
+  const dates = document.createElement("span");
+  dates.className = "dates";
+  dates.textContent = `${meta.kind ? meta.kind + " · " : ""}${fmtYear(m.start)} – ${fmtYear(m.end)}`;
+  row.append(name, dates);
+  const blurb = document.createElement("p");
+  blurb.className = "blurb";
+  blurb.textContent = meta.blurb || "";
+  a.append(row, blurb);
+  li.appendChild(a);
+  rul.appendChild(li);
+}
+rsec.appendChild(rul);
+groups.appendChild(rsec);
 </script>
 </body>
 </html>

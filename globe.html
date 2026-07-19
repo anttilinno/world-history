@@ -151,6 +151,25 @@
   .scrubber button:hover { border-color: #eef1f6; color: #fff; }
   .scrubber button[aria-pressed="true"] { background: #eef1f6; color: #0b0e13; border-color: #eef1f6; }
 
+  /* Route endpoint markers on the sphere — a solid dot with a pulsing halo, so
+     each migration/trade arc visibly starts and ends somewhere. JS projects each
+     to its screen position every frame and hides the ones on the far side. */
+  #arcPois { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
+  #arcPois[hidden] { display: none; }
+  .arc-poi { position: absolute; transform: translate(-50%,-50%);
+    width: 11px; height: 11px; border-radius: 50%; pointer-events: auto; cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.85);
+    box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+  .arc-poi:hover, .arc-poi:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+  .arc-poi::after { content: ""; position: absolute; inset: -3px; border-radius: 50%;
+    animation: poi-pulse 1.7s ease-out infinite; }
+  @keyframes poi-pulse {
+    0%   { box-shadow: 0 0 0 0 var(--poi); }
+    70%  { box-shadow: 0 0 0 11px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) { .arc-poi::after { animation: none; } }
+
   .legend { background: rgba(12,16,22,0.6); border: 1px solid rgba(255,255,255,0.12);
     border-radius: 12px; padding: 12px 14px; font-size: 11px; }
   .legend div { display: flex; align-items: center; gap: 7px; margin: 3px 0; color: #cfd6e2; }
@@ -178,6 +197,8 @@
     <img src="vendor/earth-day.jpg" alt="World map">
   </div>
 </div>
+
+<div id="arcPois" aria-hidden="true"></div>
 
 <button id="tip" type="button" title="Click for details" hidden></button>
 
@@ -228,7 +249,7 @@
   </div>
 </div>
 
-<script src="data.js"></script>
+<script src="data.js?v=2"></script>
 <script src="vendor/globe.gl.min.js"></script>
 <script>
 // Representative heartland coordinates [lat, lng] per civilization id.
@@ -263,30 +284,13 @@ const COORDS = {
 const COLORS = { africa:"#2a78d6", europe:"#1baf7a", asia:"#d99400", namerica:"#e34948", samerica:"#7a5cc8", oceania:"#12988a" };
 const NAMES = { africa:"Africa", europe:"Europe", asia:"Asia", namerica:"North America", samerica:"South America", oceania:"Oceania" };
 
-// Great migrations, trade routes and expansions — animated arcs, shown for the years they were active.
-const ROUTES = [
-  {label:"Out-of-Africa migration", from:[9,40], to:[31,35], startYear:-70000, endYear:-45000, type:"migration"},
-  {label:"Peopling of the Americas", from:[66,170], to:[65,-155], startYear:-20000, endYear:-14000, type:"migration"},
-  {label:"Peopling of the Americas", from:[65,-155], to:[-41.5,-73], startYear:-16000, endYear:-12000, type:"migration"},
-  {label:"Austronesian expansion", from:[23.7,121], to:[-6,106], startYear:-3000, endYear:-1500, type:"migration"},
-  {label:"Austronesian expansion", from:[0.5,114], to:[-18.9,47.5], startYear:300, endYear:1200, type:"migration"},
-  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[20,-157], startYear:300, endYear:800, type:"migration"},
-  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-27.1,-109.4], startYear:700, endYear:1200, type:"migration"},
-  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-37,175], startYear:1200, endYear:1300, type:"migration"},
-  {label:"Silk Road", from:[34.3,108.9], to:[41,29], startYear:-130, endYear:1450, type:"trade"},
-  {label:"Trans-Saharan gold/salt trade", from:[16.8,-3], to:[31.6,-8], startYear:700, endYear:1600, type:"trade"},
-  {label:"Atlantic slave trade", from:[6,3], to:[18.5,-70], startYear:1500, endYear:1870, type:"trade"},
-  {label:"Columbian voyages", from:[37.2,-6.4], to:[24,-75], startYear:1492, endYear:1600, type:"exchange"},
-  {label:"Viking voyages", from:[59,10.7], to:[54,-1], startYear:793, endYear:1000, type:"conquest"},
-  {label:"Viking voyages", from:[64,-22], to:[51.6,-55.5], startYear:985, endYear:1020, type:"migration"},
-  {label:"Viking voyages", from:[59.3,18.1], to:[41,29], startYear:800, endYear:1100, type:"trade"},
-  {label:"Mongol conquests", from:[47.2,102.8], to:[39.9,116.4], startYear:1206, endYear:1279, type:"conquest"},
-  {label:"Mongol conquests", from:[47.2,102.8], to:[47.5,19], startYear:1206, endYear:1242, type:"conquest"},
-  {label:"Indian Ocean monsoon trade", from:[12.8,45], to:[11.25,75.8], startYear:-100, endYear:1500, type:"trade"},
-  {label:"Indian Ocean monsoon trade", from:[11.25,75.8], to:[2.2,102.25], startYear:-100, endYear:1500, type:"trade"},
-  {label:"Bantu expansion", from:[6,10], to:[-26,28], startYear:-1000, endYear:500, type:"migration"},
-];
+// ROUTES (the migration/trade arc segments) and ROUTE_META (per-route article +
+// summary) live in data.js, shared with the articles index. Attach each segment's
+// article id here so a tip click knows where to link.
 const ARC_COLORS = { migration:"#e6b800", trade:"#37c0d8", exchange:"#8f7cff", conquest:"#ff5a4d" };
+// hex -> "r,g,b" for rgba() ring fades
+const hexRgb = h => { const n = parseInt(h.slice(1), 16); return `${n >> 16 & 255},${n >> 8 & 255},${n & 255}`; };
+ROUTES.forEach(r => { r.article = (ROUTE_META[r.label] || {}).article; });
 
 const fmtYear = y => y === 2026 ? "present"
   : y < 0 ? (-y >= 10000 ? (-y).toLocaleString("en") : -y) + " BCE"
@@ -343,6 +347,7 @@ const mkRadius = c => Math.max(5, Math.min(16, 3 + Math.log10(Math.max(c.end - c
 let tipAnchor = null;   // { lat, lng } on the sphere, { el } on the flat map
 let tipRaf = null;
 let tipCiv = null;      // whose label is showing — the details the tip opens
+let tipRoute = null;    // set instead of tipCiv when the label belongs to a route
 let tipHideTimer = null;
 let tipMarker = null;   // the flat marker wearing the label, singled out from the lit crowd
 function setFocusMarker(el) {
@@ -382,6 +387,7 @@ function showTip(c, el) {
   more.textContent = "Click for details";
   tip.replaceChildren(name, dates, more);
   tipCiv = c;
+  tipRoute = null;
   tipAnchor = el ? { el } : { lat: c.lat, lng: c.lng };
   setFocusMarker(el);
   tip.hidden = false;
@@ -397,10 +403,41 @@ function showTip(c, el) {
     tipRaf = requestAnimationFrame(follow);
   }
 }
+// A route dot's label: the migration/trade route's name, kind and span. Anchored
+// to the sphere at lat/lng so it follows rotation and hides round the back, the
+// same as a civ tip. tipCiv stays null — a route has no details panel to open.
+function showRouteTip(route, lat, lng) {
+  const name = document.createElement("b");
+  name.textContent = route.label;
+  const meta = document.createElement("span");
+  meta.textContent = `${route.type} · ${fmtYear(route.startYear)} – ${fmtYear(route.endYear)}`;
+  const kids = [name, meta];
+  if (route.article) {
+    const more = document.createElement("span");
+    more.className = "more";
+    more.textContent = "Read the article →";
+    kids.push(more);
+  }
+  tip.replaceChildren(...kids);
+  tipCiv = null;
+  tipRoute = route;
+  tipAnchor = { lat, lng };
+  setFocusMarker(null);
+  tip.hidden = false;
+  placeTip();
+  if (tipRaf) cancelAnimationFrame(tipRaf);
+  const follow = () => {
+    if (!tipAnchor || tipAnchor.el || tip.hidden) { tipRaf = null; return; }
+    placeTip();
+    tipRaf = requestAnimationFrame(follow);
+  };
+  tipRaf = requestAnimationFrame(follow);
+}
 function hideTip() {
   clearTimeout(tipHideTimer);
   tip.hidden = true;
   tipAnchor = null;
+  tipRoute = null;
   setFocusMarker(null);
   if (tipRaf) { cancelAnimationFrame(tipRaf); tipRaf = null; }
 }
@@ -409,7 +446,10 @@ function hideTip() {
 const scheduleHideTip = () => { clearTimeout(tipHideTimer); tipHideTimer = setTimeout(hideTip, 160); };
 tip.addEventListener("mouseenter", () => clearTimeout(tipHideTimer));
 tip.addEventListener("mouseleave", scheduleHideTip);
-tip.addEventListener("click", () => { if (tipCiv) openInfo(tipCiv); });
+tip.addEventListener("click", () => {
+  if (tipCiv) openInfo(tipCiv);
+  else if (tipRoute && tipRoute.article) window.location.href = `articles/${tipRoute.article}.html?from=globe`;
+});
 
 // Details panel — a click on a point, a flat marker, or a label names the
 // civilization and opens its details here; the article is one click further in.
@@ -467,11 +507,57 @@ function render(idx) {
   const alive = aliveAt(year);
   globe.pointsData(alive);
   // arcs are a sphere-only rendering
-  globe.arcsData(showArcs && view === "sphere" ? ROUTES.filter(a => a.startYear <= year && a.endYear >= year) : []);
+  const activeRoutes = showArcs && view === "sphere" ? ROUTES.filter(a => a.startYear <= year && a.endYear >= year) : [];
+  globe.arcsData(activeRoutes);
+  // a solid endpoint dot at each route's start and end, coloured to match the arc
+  setArcPois(activeRoutes);
   renderFlat(year);
   yearEl.textContent = fmtYear(year);
   countEl.textContent = `${alive.length} civilization${alive.length === 1 ? "" : "s"} present`;
 }
+
+// Route endpoint dots: an overlay of solid markers at each active arc's start
+// and end. Rebuilt when the year changes; re-projected onto the sphere every
+// frame (like the tip), and hidden when they swing round the back.
+const arcPoiLayer = document.getElementById("arcPois");
+let arcPois = [];
+function setArcPois(routes) {
+  arcPoiLayer.replaceChildren();
+  arcPois = routes.flatMap(a => {
+    const rgb = hexRgb(ARC_COLORS[a.type] || "#ffffff");
+    return [{ lat: a.from[0], lng: a.from[1], rgb, route: a }, { lat: a.to[0], lng: a.to[1], rgb, route: a }];
+  }).map(p => {
+    const el = document.createElement("div");
+    el.className = "arc-poi";
+    el.style.background = `rgb(${p.rgb})`;
+    el.style.setProperty("--poi", `rgba(${p.rgb},0.65)`);
+    el.title = p.route.label;
+    // hover or click names the route it belongs to (start and end share it)
+    const show = () => { clearTimeout(tipHideTimer); showRouteTip(p.route, p.lat, p.lng); };
+    el.addEventListener("mouseenter", show);
+    el.addEventListener("mouseleave", scheduleHideTip);
+    el.addEventListener("click", show);
+    arcPoiLayer.appendChild(el);
+    return { el, lat: p.lat, lng: p.lng };
+  });
+}
+function positionArcPois() {
+  if (arcPois.length) {
+    const c = globe.camera().position;
+    for (const d of arcPois) {
+      const p = globe.getCoords(d.lat, d.lng, 0.01);
+      // surface normal is the point itself; hide it when it faces away
+      const facing = p.x * (c.x - p.x) + p.y * (c.y - p.y) + p.z * (c.z - p.z) > 0;
+      if (!facing) { d.el.style.display = "none"; continue; }
+      const s = globe.getScreenCoords(d.lat, d.lng, 0.01);
+      d.el.style.display = "block";
+      d.el.style.left = s.x + "px";
+      d.el.style.top = s.y + "px";
+    }
+  }
+  requestAnimationFrame(positionArcPois);
+}
+requestAnimationFrame(positionArcPois);
 
 slider.addEventListener("input", () => render(+slider.value));
 

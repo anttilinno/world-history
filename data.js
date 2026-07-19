@@ -92,3 +92,47 @@ const CIVS = [
 {id:"british-australia", name:"British Australia", continent:"oceania", start:1788, end:1901, blurb:"Penal colonies grow into settler states at devastating cost to Aboriginal peoples.", wiki:"https://en.wikipedia.org/wiki/History_of_Australia"},
 {id:"modern-oceania", name:"Modern Oceania", continent:"oceania", start:1901, end:2026, blurb:"Federation, the ANZAC wars, Pacific independence — and now the front line of climate change.", wiki:"https://en.wikipedia.org/wiki/Oceania"},
 ];
+
+// Great migrations, trade routes and expansions. Each is one or more geo "hops"
+// (from/to) drawn as animated arcs on the globe; the articles index groups them
+// by label into a single entry. Years: negative = BCE, positive = CE.
+const ROUTES = [
+  {label:"Out-of-Africa migration", from:[9,40], to:[31,35], startYear:-70000, endYear:-45000, type:"migration"},
+  {label:"Peopling of the Americas", from:[66,170], to:[65,-155], startYear:-20000, endYear:-14000, type:"migration"},
+  {label:"Peopling of the Americas", from:[65,-155], to:[-41.5,-73], startYear:-16000, endYear:-12000, type:"migration"},
+  {label:"Austronesian expansion", from:[23.7,121], to:[-6,106], startYear:-3000, endYear:-1500, type:"migration"},
+  {label:"Austronesian expansion", from:[0.5,114], to:[-18.9,47.5], startYear:300, endYear:1200, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[20,-157], startYear:300, endYear:800, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-27.1,-109.4], startYear:700, endYear:1200, type:"migration"},
+  {label:"Polynesian voyaging", from:[-13.8,-171.8], to:[-37,175], startYear:1200, endYear:1300, type:"migration"},
+  {label:"Silk Road", from:[34.3,108.9], to:[41,29], startYear:-130, endYear:1450, type:"trade"},
+  {label:"Trans-Saharan gold/salt trade", from:[16.8,-3], to:[31.6,-8], startYear:700, endYear:1600, type:"trade"},
+  {label:"Atlantic slave trade", from:[6,3], to:[18.5,-70], startYear:1500, endYear:1870, type:"trade"},
+  {label:"Columbian voyages", from:[37.2,-6.4], to:[24,-75], startYear:1492, endYear:1600, type:"exchange"},
+  {label:"Viking voyages", from:[59,10.7], to:[54,-1], startYear:793, endYear:1000, type:"conquest"},
+  {label:"Viking voyages", from:[64,-22], to:[51.6,-55.5], startYear:985, endYear:1020, type:"migration"},
+  {label:"Viking voyages", from:[59.3,18.1], to:[41,29], startYear:800, endYear:1100, type:"trade"},
+  {label:"Mongol conquests", from:[47.2,102.8], to:[39.9,116.4], startYear:1206, endYear:1279, type:"conquest"},
+  {label:"Mongol conquests", from:[47.2,102.8], to:[47.5,19], startYear:1206, endYear:1242, type:"conquest"},
+  {label:"Indian Ocean monsoon trade", from:[12.8,45], to:[11.25,75.8], startYear:-100, endYear:1500, type:"trade"},
+  {label:"Indian Ocean monsoon trade", from:[11.25,75.8], to:[2.2,102.25], startYear:-100, endYear:1500, type:"trade"},
+  {label:"Bantu expansion", from:[6,10], to:[-26,28], startYear:-1000, endYear:500, type:"migration"},
+];
+
+// Per-route metadata for the tip link and the articles index. Keyed by label so
+// every hop of a multi-segment route resolves to the same article and summary.
+// kind = the human label for the mixed/overall character of the route.
+const ROUTE_META = {
+  "Out-of-Africa migration":      {article:"out-of-africa",         kind:"migration", blurb:"Small bands of Homo sapiens leave Africa and, over tens of millennia, populate every habitable continent."},
+  "Peopling of the Americas":     {article:"beringia",              kind:"migration", blurb:"Ice-age hunters cross the Bering land bridge and spread from Alaska to Patagonia within a few thousand years."},
+  "Austronesian expansion":       {article:"austronesian-expansion", kind:"migration", blurb:"Seafarers out of Taiwan settle an ocean realm from Madagascar to Easter Island — the widest pre-modern dispersal."},
+  "Polynesian voyaging":          {article:"polynesian-navigation", kind:"migration", blurb:"Double-hulled canoes and star paths carry settlers across the open Pacific to its farthest islands."},
+  "Silk Road":                    {article:"silk-road",             kind:"trade",     blurb:"Overland caravan networks linking China, Persia and the Mediterranean in silk, faith and technology."},
+  "Trans-Saharan gold/salt trade":{article:"mali-empire",           kind:"trade",     blurb:"Camel caravans move West African gold north and Saharan salt south, enriching empires like Ghana and Mali."},
+  "Atlantic slave trade":         {article:"atlantic-slave-trade",  kind:"trade",     blurb:"The forced transport of over 12 million Africans to the Americas across four centuries."},
+  "Columbian voyages":            {article:"colonial-empires",      kind:"exchange",  blurb:"Columbus's crossings open sustained contact between the Old World and the New — and the Columbian Exchange."},
+  "Viking voyages":               {article:"vikings",               kind:"raiding & trade", blurb:"Norse raiders, traders and settlers range from Newfoundland to Baghdad."},
+  "Mongol conquests":             {article:"mongol-empire",         kind:"conquest",  blurb:"Steppe cavalry build the largest contiguous land empire in history within a single century."},
+  "Bantu expansion":              {article:"bantu-expansion",       kind:"migration", blurb:"Farming, herding and ironworking peoples spread from West Africa across the continent's centre and south."},
+  "Indian Ocean monsoon trade":   {article:"indian-ocean-trade",    kind:"trade",     blurb:"Monsoon winds drive a seasonal trade in spices, textiles and ideas between Africa, Arabia, India and Southeast Asia."},
+};
